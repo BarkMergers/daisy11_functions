@@ -1,37 +1,12 @@
-using Microsoft.AspNetCore.Http;
+using Daisy11Functions.Database;
+using Daisy11Functions.Database.Tables;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NewWorldFunctions.Helpers;
 
 namespace Daisy11Functions;
-
-public class Role
-{
-    public long id { get; set; }
-    public string? agent { get; set; }
-    public string? role { get; set; }
-    public bool active { get; set; }
-}
-
-public interface IProjectContext: IDisposable
-{
-    DbSet<Role> Role { get; set; }
-    int SaveChanges();
-}
-
-public class ProjectContext: DbContext, IProjectContext
-{
-    public ProjectContext(DbContextOptions<ProjectContext> options) : base(options) { }
-    public DbSet<Role> Role { get; set; }
-}
-
-public class Output
-{
-    public string? Role { get; set; }
-}
 
 public class GetRole
 {
@@ -53,6 +28,6 @@ public class GetRole
 
         Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.active);
 
-        return new OkObjectResult(new Output() { Role = agentRecord == null ? "none" : agentRecord.role });
+        return new OkObjectResult(new { Role = agentRecord == null ? "none" : agentRecord.role });
     }
 }

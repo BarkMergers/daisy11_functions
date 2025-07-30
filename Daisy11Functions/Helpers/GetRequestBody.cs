@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker.Http;
+﻿using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Net;
 
 namespace NewWorldFunctions.Helpers
 {

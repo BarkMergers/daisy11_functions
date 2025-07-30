@@ -1,4 +1,5 @@
 using Daisy11Functions;
+using Daisy11Functions.Database;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
