@@ -34,27 +34,25 @@ public class SaveAgentDetail
         _projectContext = projectContext;
     }
 
-    [Function("SaveAgentDetail")]
-    public async Task<IActionResult> Run_SaveAgentDetail([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "SaveAgentDetail")] 
-            HttpRequestData req)
-    {
-        _logger.LogInformation("Start at GetRole");
+[Function("SaveAgent")]
+public async Task<IActionResult> Run_SaveAgent([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "SaveAgent")] 
+        HttpRequestData req)
+{
+    //if (CORS.IsPreFlight(req)) return CORS.PreFlightData(req);
 
-        if (CORS.IsPreFlight(req)) return CORS.PreFlightData();
+    UpdateAgentData bodyData = await GetRequestByBody.GetBody<UpdateAgentData>(req);
 
-        UpdateAgentData bodyData = await GetRequestByBody.GetBody<UpdateAgentData>(req);
+    //Role? roleRecord = _projectContext.Role.FirstOrDefault(x => x.agent == bodyData.agent);
+    //if (roleRecord != null)
+    //{
+    //    roleRecord.firstname = bodyData.firstname;
+    //    roleRecord.lastname = bodyData.lastname;
+    //    roleRecord.age = bodyData.age;
+    //    roleRecord.role = bodyData.role;
+    //    roleRecord.active = bodyData.active;
+    //}
+    //_projectContext.SaveChanges();
 
-        Role? roleRecord = _projectContext.Role.FirstOrDefault(x => x.agent == bodyData.agent);
-
-        if (roleRecord != null)
-        {
-            roleRecord.firstname = bodyData.firstname;
-            roleRecord.lastname = bodyData.lastname;
-            roleRecord.age = bodyData.age;
-            roleRecord.role = bodyData.role;
-            roleRecord.active = bodyData.active;
-        }
-
-        return new OkObjectResult(new { Result = "Success" });
-    }
+    return new OkObjectResult(new { Result = "Success" });
+}
 }

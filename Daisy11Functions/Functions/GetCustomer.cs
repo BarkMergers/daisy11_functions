@@ -4,10 +4,11 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using NewWorldFunctions.Helpers;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using Daisy11Functions.Database.Tables;
 
 namespace Daisy11Functions;
-
-
 
 public class GetCustomer
 {
@@ -26,12 +27,23 @@ public class GetCustomer
     {
         _logger.LogInformation("Start at GetCustomer");
 
-        CORS.IsPreFlight(req); //return CORS.PreFlightData();
+        //CORS.IsPreFlight(req); //return CORS.PreFlightData();
 
         PaginationObject output = new();
-        int totalCount = _projectContext.Customer.Count();
 
-        output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();
+
+        
+        MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
+        //MongoClient dbClient = new MongoClient("mongodb://localhost:27017/local");
+        IMongoDatabase database = dbClient.GetDatabase("local");
+        IMongoCollection<Customer> collection = database.GetCollection<Customer>("customer");
+        long totalCount = collection.Find(new BsonDocument()).CountDocuments();
+        output.Data = collection.Find(new BsonDocument()).Skip(page).Limit(limit).ToList();
+
+
+        //int totalCount = _projectContext.Customer.Count();
+        //output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();
+
 
         output.Pagination = new PaginationData()
         {

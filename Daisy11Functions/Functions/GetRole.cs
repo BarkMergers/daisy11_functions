@@ -24,7 +24,7 @@ public class GetRole
     {
         _logger.LogInformation("Start at GetRole");
 
-        if (CORS.IsPreFlight(req)) return CORS.PreFlightData();
+        //if (CORS.IsPreFlight(req)) return CORS.PreFlightData(req);
 
         Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.active);
 
