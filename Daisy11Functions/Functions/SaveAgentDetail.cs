@@ -19,21 +19,18 @@ public class UpdateAgentData
 
 public class SaveAgentDetail
 {
-    private readonly ILogger<GetRole> _logger;
+    private readonly ILogger<SaveAgentDetail> _logger;
     private readonly IProjectContext _projectContext;
 
-    public SaveAgentDetail(ILogger<GetRole> logger, IProjectContext projectContext)
+    public SaveAgentDetail(ILogger<SaveAgentDetail> logger, IProjectContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;
     }
 
     [Function("SaveAgent")]
-
-
     public async Task<HttpResponseData> Run_SaveAgent([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "SaveAgent/")]
             HttpRequestData req)
-
     {
 
         _logger.LogInformation("Start at Run_GetAgent");

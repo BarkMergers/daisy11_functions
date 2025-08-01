@@ -9,6 +9,8 @@ namespace NewWorldFunctions.Helpers
     {
         public static bool IsPreFlight(HttpRequestData req, out HttpResponseData response)
         {
+            // Has no effect when deployed as Azure manages these headers. This is only for running in Visual Studio
+
             string? requestSource = req.Headers.Contains("origin") ? req.Headers.GetValues("origin").FirstOrDefault() : null;
 
             response = req.CreateResponse(HttpStatusCode.NoContent);
@@ -19,6 +21,7 @@ namespace NewWorldFunctions.Helpers
 
             switch (requestSource)
                 {
+                    // case "https://nice-beach-0b426541e.1.azurestaticapps.net/":
                     case "http://localhost:59414":
                         response.Headers.Add("Access-Control-Allow-Origin", requestSource);
                         break;

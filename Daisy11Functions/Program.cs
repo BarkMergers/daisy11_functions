@@ -14,7 +14,7 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
-string? connection = Environment.GetEnvironmentVariable("daisy11Database");
+string? connection = Environment.GetEnvironmentVariable("Daisy11Database");
 
 
 builder.Services.AddDbContext<ProjectContext>(options => options.UseSqlServer(connection));

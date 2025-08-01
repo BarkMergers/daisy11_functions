@@ -12,10 +12,10 @@ namespace Daisy11Functions;
 
 public class GetCustomer
 {
-    private readonly ILogger<GetRole> _logger;
+    private readonly ILogger<GetCustomer> _logger;
     private readonly IProjectContext _projectContext;
 
-    public GetCustomer(ILogger<GetRole> logger, IProjectContext projectContext)
+    public GetCustomer(ILogger<GetCustomer> logger, IProjectContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;
@@ -25,11 +25,9 @@ public class GetCustomer
     public async Task<HttpResponseData> Run_GetCustomer([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetCustomer/{page}/{limit}")] 
         HttpRequestData req, int page, int limit)
     {
-
         _logger.LogInformation("Start at Run_GetCustomer");
-        if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
-
+        if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
 
         PaginationObject output = new();
 
