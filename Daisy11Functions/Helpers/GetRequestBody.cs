@@ -16,8 +16,8 @@ namespace NewWorldFunctions.Helpers
 
                 if (string.IsNullOrWhiteSpace(body))
                     throw new Exception("Request Body was blank");
-
-                return JsonConvert.DeserializeObject<T>(body, dateTimeConverter);
+                else
+                    return JsonConvert.DeserializeObject<T>(body, dateTimeConverter);
             }
         }
     }

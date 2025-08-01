@@ -1,6 +1,6 @@
 using Daisy11Functions.Database;
 using Daisy11Functions.Database.Tables;
-using Microsoft.AspNetCore.Mvc;
+using Daisy11Functions.Helpers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -20,14 +20,16 @@ public class GetRole
     }
 
     [Function("GetRole")]
-    public IActionResult Run_GetRole([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "GetRole/{agent}")] HttpRequestData req, string? agent)
+    public async Task<HttpResponseData> Run_GetRole([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "GetRole/{agent}")] HttpRequestData req, string? agent)
     {
-        _logger.LogInformation("Start at GetRole");
 
-        //if (CORS.IsPreFlight(req)) return CORS.PreFlightData(req);
+        _logger.LogInformation("Start at Run_GetRole");
+        if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
+        if (await TokenValidation.Validate(req) is { } validation) return validation;
+
 
         Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.active);
 
-        return new OkObjectResult(new { Role = agentRecord == null ? "none" : agentRecord.role });
+        return await API.Success(response, new { Role = agentRecord == null ? "none" : agentRecord.role });
     }
 }

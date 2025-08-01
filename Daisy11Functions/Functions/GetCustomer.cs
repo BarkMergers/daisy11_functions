@@ -1,5 +1,4 @@
 using Daisy11Functions.Database;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -7,6 +6,7 @@ using NewWorldFunctions.Helpers;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Daisy11Functions.Database.Tables;
+using Daisy11Functions.Helpers;
 
 namespace Daisy11Functions;
 
@@ -22,17 +22,17 @@ public class GetCustomer
     }
 
     [Function("GetCustomer")]
-    public IActionResult Run_GetCustomer([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "GetCustomer/{page}/{limit}")] 
+    public async Task<HttpResponseData> Run_GetCustomer([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetCustomer/{page}/{limit}")] 
         HttpRequestData req, int page, int limit)
     {
-        _logger.LogInformation("Start at GetCustomer");
 
-        //CORS.IsPreFlight(req); //return CORS.PreFlightData();
+        _logger.LogInformation("Start at Run_GetCustomer");
+        if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
+        if (await TokenValidation.Validate(req) is { } validation) return validation;
+
 
         PaginationObject output = new();
 
-
-        
         MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
         //MongoClient dbClient = new MongoClient("mongodb://localhost:27017/local");
         IMongoDatabase database = dbClient.GetDatabase("local");
@@ -40,10 +40,8 @@ public class GetCustomer
         long totalCount = collection.Find(new BsonDocument()).CountDocuments();
         output.Data = collection.Find(new BsonDocument()).Skip(page).Limit(limit).ToList();
 
-
         //int totalCount = _projectContext.Customer.Count();
         //output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();
-
 
         output.Pagination = new PaginationData()
         {
@@ -53,6 +51,6 @@ public class GetCustomer
             HasMore = page + limit <= totalCount
         };
 
-        return new OkObjectResult(output);
+        return await API.Success(response, output);
     }
 }
