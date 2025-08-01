@@ -23,8 +23,8 @@ public class GetRole
     public async Task<HttpResponseData> Run_GetRole([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "GetRole/{agent}")] HttpRequestData req, string? agent)
     {
         _logger.LogInformation("Start at Run_GetRole");
-        if (await TokenValidation.Validate(req) is { } validation) return validation;
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
+        if (await TokenValidation.Validate(req) is { } validation) return validation;
 
         Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.active);
 

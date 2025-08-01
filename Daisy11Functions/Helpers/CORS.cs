@@ -10,6 +10,8 @@ namespace NewWorldFunctions.Helpers
         public static bool IsPreFlight(HttpRequestData req, out HttpResponseData response)
         {
             // Has no effect when deployed as Azure manages these headers. This is only for running in Visual Studio
+            // Preflight check must be before Token validation - token wont be passed within the Preflight and would fail before
+            // the Preflight message is returned
 
             string? requestSource = req.Headers.Contains("origin") ? req.Headers.GetValues("origin").FirstOrDefault() : null;
 

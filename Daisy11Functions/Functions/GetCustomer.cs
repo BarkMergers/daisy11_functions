@@ -26,8 +26,8 @@ public class GetCustomer
         HttpRequestData req, int page, int limit)
     {
         _logger.LogInformation("Start at Run_GetCustomer");
-        if (await TokenValidation.Validate(req) is { } validation) return validation;
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
+        if (await TokenValidation.Validate(req) is { } validation) return validation;
 
         PaginationObject output = new();
 
