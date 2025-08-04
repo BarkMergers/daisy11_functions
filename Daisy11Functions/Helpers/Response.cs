@@ -8,7 +8,13 @@ namespace Daisy11Functions.Helpers
         public static async Task<HttpResponseData> Success (HttpResponseData input, object data)
         {
             input.StatusCode = System.Net.HttpStatusCode.OK;
-            await input.WriteStringAsync(JsonSerializer.Serialize(data));
+
+            JsonSerializerOptions options = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            await input.WriteStringAsync(JsonSerializer.Serialize(data, options));
             return input;
         }
     }

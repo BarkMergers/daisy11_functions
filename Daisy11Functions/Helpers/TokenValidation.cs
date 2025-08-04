@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Daisy11Functions.Helpers
 {
@@ -23,18 +24,23 @@ namespace Daisy11Functions.Helpers
         public static async Task<HttpResponseData?> Validate(Microsoft.Azure.Functions.Worker.Http.HttpRequestData req,
             ILogger? _logger)
         {
-            string? authHeader = req.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null;
+            //string? authHeader = req.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null;
 
-            if (authHeader == null || !authHeader.StartsWith("Bearer "))
+
+            IHttpCookie? cookieToken = req.Cookies.FirstOrDefault(x => x.Name == "access_token");
+
+            if (cookieToken == null || cookieToken.Value == null)
             {
                 HttpResponseData unauthorized = req.CreateResponse(HttpStatusCode.NotAcceptable);
                 await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
                 return unauthorized;
             }
 
+
+            string authHeader = cookieToken.Value;
             string? tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
             string? backendClientID = Environment.GetEnvironmentVariable("BACKEND_CLIENT_ID");
-            string token = authHeader.Substring("Bearer ".Length).Trim();
+            string token = authHeader.Trim();
 
             ConfigurationManager<OpenIdConnectConfiguration> configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                 $"https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration",
