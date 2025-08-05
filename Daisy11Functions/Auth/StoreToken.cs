@@ -6,13 +6,12 @@ using Daisy11Functions.Helpers;
 
 namespace Daisy11Functions;
 
-
-
 public class StoreToken
 {
     private class GetToken
     {
         public string? Token { get; set; }
+        public string? Tenant { get; set; }
     }
 
     private readonly ILogger<StoreToken> _logger;
@@ -31,9 +30,8 @@ public class StoreToken
 
         GetToken bodyData = await GetRequestByBody.GetBody<GetToken>(req);
 
-        response.Headers.Add("Set-Cookie",
-            "access_token=" + bodyData.Token +
-            "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=3600");
+        response.Headers.Add("Set-Cookie", $"access_token={bodyData.Token}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=3600");
+        response.Headers.Add("Set-Cookie", $"active_tenant={bodyData.Tenant}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=3600");
 
         return await API.Success(response, new { });
     }
@@ -45,13 +43,9 @@ public class StoreToken
         _logger.LogInformation("Start at Run_RemoveToken");
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
 
-        response.Headers.Add("Set-Cookie",
-            "access_token=; HttpOnly; Secure; SameSite=None; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        response.Headers.Add("Set-Cookie", "access_token=; HttpOnly; Secure; SameSite=None; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        response.Headers.Add("Set-Cookie", "access_token=; HttpOnly; Secure; SameSite=None; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
 
         return await API.Success(response, new { });
     }
-
-
-
-
 }

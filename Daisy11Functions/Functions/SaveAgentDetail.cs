@@ -1,4 +1,5 @@
 using Daisy11Functions.Database;
+using Daisy11Functions.Database.Tables;
 using Daisy11Functions.Helpers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -37,19 +38,19 @@ public class SaveAgentDetail
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
-
         UpdateAgentData bodyData = await GetRequestByBody.GetBody<UpdateAgentData>(req);
+        string tenant = GetTenant.Value(req);
 
-        //Role? roleRecord = _projectContext.Role.FirstOrDefault(x => x.agent == bodyData.agent);
-        //if (roleRecord != null)
-        //{
-        //    roleRecord.firstname = bodyData.firstname;
-        //    roleRecord.lastname = bodyData.lastname;
-        //    roleRecord.age = bodyData.age;
-        //    roleRecord.role = bodyData.role;
-        //    roleRecord.active = bodyData.active;
-        //}
-        //_projectContext.SaveChanges();
+        Role? roleRecord = _projectContext.Role.FirstOrDefault(x => x.agent == bodyData.agent && x.tenant == tenant);
+        if (roleRecord != null)
+        {
+            roleRecord.firstname = bodyData.firstname;
+            roleRecord.lastname = bodyData.lastname;
+            roleRecord.age = bodyData.age;
+            roleRecord.role = bodyData.role;
+            roleRecord.active = bodyData.active;
+        }
+        _projectContext.SaveChanges();
 
         return await API.Success(response, new { Result = "Success" });
     }

@@ -27,16 +27,23 @@ public class GetAgent
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req, _logger) is { } validation) return validation;
 
-        //Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent);
+        string tenant = GetTenant.Value(req);
 
-        Role agentRecord = new Role()
-        {
-            firstname = "Mark",
-            lastname = "Burgess",
-            role = "Comms",
-            age = 22,
-            active = true
-        };
+        _logger.LogInformation("Tenant in use = " + tenant);
+
+        Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.tenant == tenant);
+
+        //Role agentRecord = new Role()
+        //{
+        //    firstname = "Mark",
+        //    lastname = "Burgess",
+        //    role = "Comms",
+        //    age = 22,
+        //    active = true
+        //};
+
+
+
 
         return await API.Success(response, agentRecord = agentRecord == null ? new Role() : agentRecord);
     }

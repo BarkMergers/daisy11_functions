@@ -7,6 +7,6 @@ namespace Daisy11Functions.Database
     {
         public ProjectContext(DbContextOptions<ProjectContext> options) : base(options) { }
         public DbSet<Role> Role { get; set; }
-        public DbSet<Customer> Customer { get; set; }
+        //public DbSet<Customer> Customer { get; set; }
     }
 }

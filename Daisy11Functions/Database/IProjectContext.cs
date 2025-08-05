@@ -6,7 +6,7 @@ namespace Daisy11Functions.Database
     public interface IProjectContext : IDisposable
     {
         DbSet<Role> Role { get; set; }
-        DbSet<Customer> Customer { get; set; }
+        //DbSet<Customer> Customer { get; set; }
         int SaveChanges();
     }
 }

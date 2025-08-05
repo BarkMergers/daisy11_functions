@@ -5,7 +5,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Daisy11Functions.Helpers
 {
@@ -24,9 +23,6 @@ namespace Daisy11Functions.Helpers
         public static async Task<HttpResponseData?> Validate(Microsoft.Azure.Functions.Worker.Http.HttpRequestData req,
             ILogger? _logger)
         {
-            //string? authHeader = req.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null;
-
-
             IHttpCookie? cookieToken = req.Cookies.FirstOrDefault(x => x.Name == "access_token");
 
             if (cookieToken == null || cookieToken.Value == null)
@@ -35,7 +31,6 @@ namespace Daisy11Functions.Helpers
                 await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
                 return unauthorized;
             }
-
 
             string authHeader = cookieToken.Value;
             string? tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
@@ -64,7 +59,7 @@ namespace Daisy11Functions.Helpers
             {
                 System.Security.Claims.ClaimsPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
 
-                // Token is valid — you can access claims here
+                // Token is valid — Access claims here
                 string? userId = principal.FindFirst("sub")?.Value;
 
             }
