@@ -1,4 +1,5 @@
 using Daisy11Functions;
+using Daisy11Functions.Auth;
 using Daisy11Functions.Database;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
@@ -19,6 +20,7 @@ string? connection = Environment.GetEnvironmentVariable("Daisy11Database");
 
 builder.Services.AddDbContext<ProjectContext>(options => options.UseSqlServer(connection));
 builder.Services.AddScoped<IProjectContext, ProjectContext>();
+builder.Services.AddScoped<GetTenantDetail, GetTenantDetail>();
 
 
 builder.Build().Run();

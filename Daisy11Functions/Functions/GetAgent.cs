@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using NewWorldFunctions.Helpers;
 using Daisy11Functions.Helpers;
+using Daisy11Functions.Auth;
 
 namespace Daisy11Functions;
 
@@ -12,11 +13,28 @@ public class GetAgent
 {
     private readonly ILogger<GetAgent> _logger;
     private readonly IProjectContext _projectContext;
+    private readonly GetTenantDetail _getTenantDetail;
 
-    public GetAgent(ILogger<GetAgent> logger, IProjectContext projectContext)
+    private class ReturnData
+    {
+        public long id { get; set; }
+        public string? agent { get; set; }
+        public string? role { get; set; }
+        public string tenant { get; set; }
+        public bool active { get; set; }
+        public string? firstname { get; set; }
+        public string? lastname { get; set; }
+        public int? age { get; set; }
+    }
+
+
+
+
+    public GetAgent(ILogger<GetAgent> logger, IProjectContext projectContext, GetTenantDetail getTenantDetail)
     {
         _logger = logger;
         _projectContext = projectContext;
+        _getTenantDetail = getTenantDetail;
     }
 
     [Function("GetAgent")]
@@ -27,24 +45,21 @@ public class GetAgent
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req, _logger) is { } validation) return validation;
 
-        string tenant = GetTenant.Value(req);
+        Tenant? tenant = _getTenantDetail.Data(req);
 
-        _logger.LogInformation("Tenant in use = " + tenant);
+        ReturnData? agentRecord = _projectContext.Agent.Where(x => x.agent == agent && x.tenantid == tenant.id)
+                            .Select(x => new ReturnData
+                            {
+                                id = x.id,
+                                active = x.active,
+                                age = x.age,
+                                agent = x.agent,
+                                firstname = x.firstname,
+                                lastname = x.lastname,
+                                role = x.role,
+                                tenant = tenant.tenantname
+                            }).FirstOrDefault();
 
-        Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.tenant == tenant);
-
-        //Role agentRecord = new Role()
-        //{
-        //    firstname = "Mark",
-        //    lastname = "Burgess",
-        //    role = "Comms",
-        //    age = 22,
-        //    active = true
-        //};
-
-
-
-
-        return await API.Success(response, agentRecord = agentRecord == null ? new Role() : agentRecord);
+        return await API.Success(response, agentRecord = agentRecord == null ? new ReturnData() : agentRecord);
     }
 }

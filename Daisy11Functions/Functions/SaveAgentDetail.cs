@@ -1,3 +1,4 @@
+using Daisy11Functions.Auth;
 using Daisy11Functions.Database;
 using Daisy11Functions.Database.Tables;
 using Daisy11Functions.Helpers;
@@ -21,11 +22,13 @@ public class UpdateAgentData
 public class SaveAgentDetail
 {
     private readonly ILogger<SaveAgentDetail> _logger;
+    private readonly GetTenantDetail _getTenantDetail;
     private readonly IProjectContext _projectContext;
 
-    public SaveAgentDetail(ILogger<SaveAgentDetail> logger, IProjectContext projectContext)
+    public SaveAgentDetail(ILogger<SaveAgentDetail> logger, IProjectContext projectContext, GetTenantDetail getTenantDetail)
     {
         _logger = logger;
+        _getTenantDetail = getTenantDetail;
         _projectContext = projectContext;
     }
 
@@ -39,17 +42,21 @@ public class SaveAgentDetail
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
         UpdateAgentData bodyData = await GetRequestByBody.GetBody<UpdateAgentData>(req);
-        string tenant = GetTenant.Value(req);
+        Tenant? tenant = _getTenantDetail.Data(req);
 
-        Role? roleRecord = _projectContext.Role.FirstOrDefault(x => x.agent == bodyData.agent && x.tenant == tenant);
-        if (roleRecord != null)
+        Agent? roleRecord = _projectContext.Agent.FirstOrDefault(x => x.agent == bodyData.agent && x.tenantid == tenant.id);
+        if (roleRecord == null)
         {
-            roleRecord.firstname = bodyData.firstname;
-            roleRecord.lastname = bodyData.lastname;
-            roleRecord.age = bodyData.age;
-            roleRecord.role = bodyData.role;
-            roleRecord.active = bodyData.active;
+            roleRecord = new Agent();
+            _projectContext.Agent.Add(roleRecord);
         }
+
+        roleRecord.firstname = bodyData.firstname;
+        roleRecord.lastname = bodyData.lastname;
+        roleRecord.age = bodyData.age;
+        roleRecord.role = bodyData.role;
+        roleRecord.active = bodyData.active;
+        
         _projectContext.SaveChanges();
 
         return await API.Success(response, new { Result = "Success" });

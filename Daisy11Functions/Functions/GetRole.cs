@@ -26,7 +26,7 @@ public class GetRole
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
-        Role? agentRecord = _projectContext.Role.FirstOrDefault(x => x.agent == agent && x.active);
+        Agent? agentRecord = _projectContext.Agent.FirstOrDefault(x => x.agent == agent && x.active);
 
         return await API.Success(response, new { Role = agentRecord == null ? "none" : agentRecord.role });
     }

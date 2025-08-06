@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using NewWorldFunctions.Helpers;
 using Daisy11Functions.Helpers;
 
-namespace Daisy11Functions;
+namespace Daisy11Functions.Auth;
 
 public class StoreToken
 {
