@@ -1,6 +1,6 @@
-﻿using Daisy11Functions.Database.Tables;
+﻿using Daisy11Functions.Database.NewWorld.Tables;
 
-namespace Daisy11Functions.Database
+namespace Daisy11Functions.Database.Pagination
 {
     public class PaginationObject
     {

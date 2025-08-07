@@ -1,17 +1,17 @@
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Daisy11Functions.Database;
-using Daisy11Functions.Database.Tables;
+using Daisy11Functions.Database.NewWorld;
+using Daisy11Functions.Database.NewWorld.Tables;
 
 namespace Daisy11Functions.Auth;
 
 public class GetTenantDetail
 {
     private readonly ILogger<GetAgent> _logger;
-    private readonly IProjectContext _projectContext;
+    private readonly INewWorldContext _projectContext;
 
 
-    public GetTenantDetail(ILogger<GetAgent> logger, IProjectContext projectContext)
+    public GetTenantDetail(ILogger<GetAgent> logger, INewWorldContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;

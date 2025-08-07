@@ -1,5 +1,5 @@
-using Daisy11Functions.Database;
-using Daisy11Functions.Database.Tables;
+using Daisy11Functions.Database.NewWorld;
+using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Helpers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -11,9 +11,9 @@ namespace Daisy11Functions;
 public class GetRole
 {
     private readonly ILogger<GetRole> _logger;
-    private readonly IProjectContext _projectContext;
+    private readonly INewWorldContext _projectContext;
 
-    public GetRole(ILogger<GetRole> logger, IProjectContext projectContext)
+    public GetRole(ILogger<GetRole> logger, INewWorldContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;

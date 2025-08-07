@@ -1,5 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Daisy11Functions.Helpers
 {
@@ -17,5 +19,17 @@ namespace Daisy11Functions.Helpers
             await input.WriteStringAsync(JsonSerializer.Serialize(data, options));
             return input;
         }
+
+
+
+        public static async Task<HttpResponseData> Fail(HttpResponseData input, System.Net.HttpStatusCode errorCode, string errorMessage)
+        {
+            input.StatusCode = errorCode;
+            await input.WriteStringAsync(errorMessage);
+            return input;
+        }
+
+
+
     }
 }

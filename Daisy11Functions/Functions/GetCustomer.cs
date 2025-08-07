@@ -1,22 +1,23 @@
-using Daisy11Functions.Database;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using NewWorldFunctions.Helpers;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using Daisy11Functions.Database.Tables;
 using Daisy11Functions.Helpers;
 using System.Net;
+using Daisy11Functions.Database.NewWorld;
+using Daisy11Functions.Database.NewWorld.Tables;
+using Daisy11Functions.Database.Pagination;
 
 namespace Daisy11Functions;
 
 public class GetCustomer
 {
     private readonly ILogger<GetCustomer> _logger;
-    private readonly IProjectContext _projectContext;
+    private readonly INewWorldContext _projectContext;
 
-    public GetCustomer(ILogger<GetCustomer> logger, IProjectContext projectContext)
+    public GetCustomer(ILogger<GetCustomer> logger, INewWorldContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;
@@ -50,6 +51,7 @@ public class GetCustomer
 
         output.Pagination = new PaginationData()
         {
+            PageId = page / limit,
             CurrentPage = page,
             TotalItems = limit,
             TotalPages = Convert.ToInt32(decimal.Ceiling(decimal.Divide(totalCount, limit))),

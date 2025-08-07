@@ -1,4 +1,4 @@
-﻿namespace Daisy11Functions.Database.Tables
+﻿namespace Daisy11Functions.Database.NewWorld.Tables
 {
     public class Tenant
     {
