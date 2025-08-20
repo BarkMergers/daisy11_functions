@@ -8,7 +8,8 @@ namespace NewWorldFunctions.Helpers
         private static readonly string[] AllowedOrigins = new[]
         {
             "https://nice-beach-0b426541e.1.azurestaticapps.net",
-            "http://localhost:59414"
+            "http://localhost:59414",
+            "http://localhost:56172"
         };
 
         public static bool IsPreFlight(HttpRequestData req, out HttpResponseData response)
@@ -17,7 +18,7 @@ namespace NewWorldFunctions.Helpers
 
             response = req.CreateResponse(HttpStatusCode.NoContent);
 
-            if (!string.IsNullOrWhiteSpace(origin) && AllowedOrigins.Contains(origin))
+            if (!string.IsNullOrWhiteSpace(origin) && (AllowedOrigins.Contains(origin) || origin.StartsWith("http://localhost:")))
             {
                 response.Headers.Add("Access-Control-Allow-Origin", origin);
                 response.Headers.Add("Access-Control-Allow-Credentials", "true");

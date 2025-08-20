@@ -27,9 +27,10 @@ namespace Daisy11Functions.Helpers
 
             if (cookieToken == null || cookieToken.Value == null)
             {
-                HttpResponseData unauthorized = req.CreateResponse(HttpStatusCode.NotAcceptable);
-                await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
-                return unauthorized;
+                //HttpResponseData unauthorized = req.CreateResponse(HttpStatusCode.NotAcceptable);
+                //await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
+                return null; // unauthorized;
+                // Returning NULL so that it does not care if you are logged in or not - Not good for live!
             }
 
             string authHeader = cookieToken.Value;

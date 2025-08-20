@@ -41,24 +41,15 @@ public class GetAgent
     public async Task<HttpResponseData> Run_GetAgent([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetAgent/{agent}")] 
             HttpRequestData req, string? agent)
     {
-
-
-        _logger.LogInformation("Start at Run_GetAgent");
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req, _logger) is { } validation) return validation;
 
         try
         {
-
-
-
-
             Tenant? tenant = _getTenantDetail.Data(req);
 
             if (tenant == null)
                 throw new Exception("Unknown tenant");
-
-
 
             string tenantName = (tenant == null || tenant.tenantname == null) ? "" : tenant.tenantname;
 

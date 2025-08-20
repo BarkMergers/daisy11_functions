@@ -9,9 +9,13 @@ namespace Daisy11Functions.Database.NewWorld.Tables
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId iid { get; set; }
         public long id { get; set; }
-        public string? firstname { get; set; }
-        public string? lastname { get; set; }
-        public int age { get; set; }
-        public bool active { get; set; }
+        public string? vehicle { get; set; }
+        public string? increasedate { get; set; }
+        public string? fineoperator { get; set; }
+        public decimal fineamount { get; set; }
+        public decimal age { get; set; }
+        public decimal power { get; set; }
+        public string? issuer { get; set; }
+        public string? status { get; set; }
     }
 }

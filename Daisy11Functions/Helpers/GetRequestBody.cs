@@ -13,11 +13,7 @@ namespace NewWorldFunctions.Helpers
                 string body = await stream.ReadToEndAsync();
                 string format = "yyyy-MM-ddTHH:mm";
                 IsoDateTimeConverter dateTimeConverter = new IsoDateTimeConverter { DateTimeFormat = format };
-
-                if (string.IsNullOrWhiteSpace(body))
-                    throw new Exception("Request Body was blank");
-                else
-                    return JsonConvert.DeserializeObject<T>(body, dateTimeConverter);
+                return JsonConvert.DeserializeObject<T>(body, dateTimeConverter) ?? default!;
             }
         }
     }

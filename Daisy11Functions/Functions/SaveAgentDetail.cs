@@ -41,8 +41,6 @@ public class SaveAgentDetail
     public async Task<HttpResponseData> Run_SaveAgent([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "SaveAgent/")]
             HttpRequestData req)
     {
-
-        _logger.LogInformation("Start at Run_SaveAgent");
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
@@ -73,16 +71,16 @@ public class SaveAgentDetail
         roleRecord.role = bodyData.role;
         roleRecord.active = bodyData.active;
 
-
-
         IDbContextTransaction newWorldTX = await _newWorldContext.BeginTransaction();
         IDbContextTransaction archiveTX = await _archiveContext.BeginTransaction();
         try
         {
             _newWorldContext.SaveChanges();
             _archiveContext.SaveChanges();
+
             await newWorldTX.CommitAsync();
             await archiveTX.CommitAsync();
+
             return await API.Success(response, new { Result = "Success" });
         }
 
