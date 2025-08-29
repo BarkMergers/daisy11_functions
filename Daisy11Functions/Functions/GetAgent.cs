@@ -37,6 +37,9 @@ public class GetAgent
         _getTenantDetail = getTenantDetail;
     }
 
+
+
+
     [Function("GetAgent")]
     public async Task<HttpResponseData> Run_GetAgent([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetAgent/{agent}")] 
             HttpRequestData req, string? agent)
@@ -46,7 +49,12 @@ public class GetAgent
 
         try
         {
+
+
             Tenant? tenant = _getTenantDetail.Data(req);
+
+
+
 
             if (tenant == null)
                 throw new Exception("Unknown tenant");

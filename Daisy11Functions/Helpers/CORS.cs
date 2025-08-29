@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
+using static System.Net.WebRequestMethods;
 
 namespace NewWorldFunctions.Helpers
 {
@@ -7,9 +8,9 @@ namespace NewWorldFunctions.Helpers
     {
         private static readonly string[] AllowedOrigins = new[]
         {
-            "https://nice-beach-0b426541e.1.azurestaticapps.net",
             "http://localhost:59414",
-            "http://localhost:56172"
+            "http://localhost:56172",
+            "http://localhost:5176"
         };
 
         public static bool IsPreFlight(HttpRequestData req, out HttpResponseData response)

@@ -101,7 +101,8 @@ public class GetCustomer
 
 
             long totalCount = collection.Find(filter).CountDocuments();
-            output.Data = collection.Find(filter).Skip(page).Limit(limit).ToList();
+
+            output.Data = collection.Find(filter).SortBy(bson => bson.id).Skip(page).Limit(limit).ToList();
 
             //int totalCount = _projectContext.Customer.Count();
             //output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();

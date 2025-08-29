@@ -16,7 +16,7 @@ namespace Daisy11Functions;
 public class CustomerFilterData
 {
     public List<string>? StatusList { get; set; }
-    public List<string>? OperatorList { get; set; }
+    public List<string>? FineOperatorList { get; set; }
     public List<string>? IssuerList { get; set; }
 }
 
@@ -46,7 +46,7 @@ public class GetCustomerFilter
             CustomerFilterData output = new()
             {
                 StatusList = await GetDistinctList(dbClient, "status"),
-                OperatorList = await GetDistinctList(dbClient, "fineoperator"),
+                FineOperatorList = await GetDistinctList(dbClient, "fineoperator"),
                 IssuerList = await GetDistinctList(dbClient, "issuer")
             };
 
