@@ -11,6 +11,7 @@ using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using Grpc.Core;
 using System.Text.RegularExpressions;
+using Daisy11Functions.Models.FilterAndSort;
 
 namespace Daisy11Functions;
 
@@ -26,13 +27,15 @@ public class GetCustomer
     private readonly INewWorldContext _projectContext;
 
 
-    private class FilterValues
-    {
-        public string? status { get; set; }
-        public string? issuer { get; set; }
-        public string? fineoperator { get; set; }
-        public string? text { get; set; }
-    }
+
+
+
+
+
+
+
+
+
 
 
     public GetCustomer(ILogger<GetCustomer> logger, INewWorldContext projectContext)
@@ -50,9 +53,7 @@ public class GetCustomer
 
         try
         {
-
-
-            FilterValues? filterConfig = await GetRequestByBody.GetBody<FilterValues>(req);
+            FilterAndSortValues? filterAndSortConfig = await GetRequestByBody.GetBody<FilterAndSortValues>(req);
 
             PaginationObject output = new();
             MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
@@ -62,47 +63,64 @@ public class GetCustomer
 
             FilterDefinition<Customer> filter = Builders<Customer>.Filter.Empty;
 
-
-            if (filterConfig != null)
+            if (filterAndSortConfig != null)
             {
-                if (!string.IsNullOrWhiteSpace(filterConfig.text))
-                {
-                    var likeFilter = Builders<Customer>.Filter.Regex(
-                        c => c.vehicle,
-                        new BsonRegularExpression(".*" + Regex.Escape(filterConfig.text) + ".*", "i")
-                    );
+                Dictionary<string, object>? filters = filterAndSortConfig.filterValues;
 
-                    //FilterDefinition<Customer> filterOr = Builders<Customer>.Filter.Empty;
-                    //filterOr = Builders<Customer>.Filter.Or(filter, textFilter1);
-                    //filterOr = Builders<Customer>.Filter.(filter, textFilter2);
-                    filter = Builders<Customer>.Filter.And(filter, likeFilter);
-                }
+                //if (!string.IsNullOrWhiteSpace(filterAndSortConfig?.filterValues?["Text"].ToString()))
+                //{
 
-                if (!string.IsNullOrWhiteSpace(filterConfig.status))
-                {
-                    FilterDefinition<Customer> statusFilter = Builders<Customer>.Filter.Eq(x => x.status, filterConfig.status);
-                    filter = Builders<Customer>.Filter.And(filter, statusFilter);
-                }
+                //    string? filterValueText = filterAndSortConfig?.filterValues?["Text"].ToString();
 
-                if (!string.IsNullOrWhiteSpace(filterConfig.issuer))
-                {
-                    FilterDefinition<Customer> issuerFilter = Builders<Customer>.Filter.Eq(x => x.issuer, filterConfig.issuer);
-                    filter = Builders<Customer>.Filter.And(filter, issuerFilter);
-                }
+                //    var likeFilter = Builders<Customer>.Filter.Regex(
+                //        c => c.vehicle,
+                //        new BsonRegularExpression(".*" + Regex.Escape(string.IsNullOrEmpty(filterValueText) ? "" : filterValueText) + ".*", "i")
+                //    );
 
-                if (!string.IsNullOrWhiteSpace(filterConfig.fineoperator))
+                //    //FilterDefinition<Customer> filterOr = Builders<Customer>.Filter.Empty;
+                //    //filterOr = Builders<Customer>.Filter.Or(filter, textFilter1);
+                //    //filterOr = Builders<Customer>.Filter.(filter, textFilter2);
+                //    filter = Builders<Customer>.Filter.And(filter, likeFilter);
+                //}
+
+
+                if (filters != null)
                 {
-                    FilterDefinition<Customer> fineOperatorFilter = Builders<Customer>.Filter.Eq(x => x.fineoperator, filterConfig.fineoperator);
-                    filter = Builders<Customer>.Filter.And(filter, fineOperatorFilter);
+                    if (filters.ContainsKey("status") && !string.IsNullOrWhiteSpace(filters["status"].ToString()))
+                    {
+                        FilterDefinition<Customer> statusFilter = Builders<Customer>.Filter.Eq(x => x.status, filters["status"].ToString());
+                        filter = Builders<Customer>.Filter.And(filter, statusFilter);
+                    }
+
+                    if (filters.ContainsKey("issuer") && !string.IsNullOrWhiteSpace(filters["issuer"].ToString()))
+                    {
+                        FilterDefinition<Customer> issuerFilter = Builders<Customer>.Filter.Eq(x => x.issuer, filters["issuer"].ToString());
+                        filter = Builders<Customer>.Filter.And(filter, issuerFilter);
+                    }
+
+                    if (filters.ContainsKey("fineOperator") && !string.IsNullOrWhiteSpace(filters["fineOperator"].ToString()))
+                    {
+                        FilterDefinition<Customer> fineOperatorFilter = Builders<Customer>.Filter.Eq(x => x.fineoperator, filters["fineOperator"].ToString());
+                        filter = Builders<Customer>.Filter.And(filter, fineOperatorFilter);
+                    }
                 }
             }
 
-
-
-
             long totalCount = collection.Find(filter).CountDocuments();
 
-            output.Data = collection.Find(filter).SortBy(bson => bson.id).Skip(page).Limit(limit).ToList();
+            IFindFluent<Customer, Customer> unSortedData = collection.Find(filter);
+            IOrderedFindFluent<Customer, Customer> sortedData;
+
+            switch (filterAndSortConfig?.SortValues?.FieldName)
+            {
+                case "id": sortedData =  filterAndSortConfig.SortValues.SortOrder == "ascending" ?  unSortedData.SortBy(bson => bson.id) : unSortedData.SortByDescending(bson => bson.id); break;
+                case "vehicle": sortedData =  filterAndSortConfig.SortValues.SortOrder == "ascending" ?  unSortedData.SortBy(bson => bson.vehicle) : unSortedData.SortByDescending(bson => bson.vehicle); break;
+                case "increasedate": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.SortBy(bson => bson.increasedate) : unSortedData.SortByDescending(bson => bson.increasedate); break;
+                case "fineoperator": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.SortBy(bson => bson.fineoperator) : unSortedData.SortByDescending(bson => bson.fineoperator); break;
+                default: sortedData = unSortedData.SortBy(bson => bson.id); break;
+            }
+
+            output.Data = sortedData.Skip(page).Limit(limit).ToList();
 
             //int totalCount = _projectContext.Customer.Count();
             //output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();
