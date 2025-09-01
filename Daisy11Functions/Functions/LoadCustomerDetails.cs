@@ -27,8 +27,19 @@ public class LoadCustomerDetails
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
+
+
+
+
         try
         {
+
+
+
+
+
+
+
             MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
             //MongoClient dbClient = new MongoClient("mongodb://localhost:27017/local");
             IMongoDatabase database = dbClient.GetDatabase("local");

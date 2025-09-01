@@ -51,6 +51,9 @@ public class GetAgent
         {
 
 
+
+
+
             Tenant? tenant = _getTenantDetail.Data(req);
 
 

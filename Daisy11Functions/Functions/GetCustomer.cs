@@ -1,17 +1,15 @@
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using NewWorldFunctions.Helpers;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using Daisy11Functions.Helpers;
-using System.Net;
+using Daisy11Functions.Database.Archive.Tables;
 using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
-using Grpc.Core;
-using System.Text.RegularExpressions;
+using Daisy11Functions.Helpers;
 using Daisy11Functions.Models.FilterAndSort;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using NewWorldFunctions.Helpers;
+using StackExchange.Redis;
 
 namespace Daisy11Functions;
 
@@ -29,9 +27,15 @@ public class GetCustomer
 
 
 
+    private static readonly Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
+    {
+        string? redisConnection = Environment.GetEnvironmentVariable("RedisConnection");
+        if (string.IsNullOrWhiteSpace(redisConnection))
+            throw new Exception("RedisConnection not found/configured");
+        return ConnectionMultiplexer.Connect(redisConnection);
+    });
 
-
-
+    public static ConnectionMultiplexer Connection => lazyConnection.Value;
 
 
 
@@ -44,6 +48,7 @@ public class GetCustomer
         _projectContext = projectContext;
     }
 
+
     [Function("GetCustomer")]
     public async Task<HttpResponseData> Run_GetCustomer([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "GetCustomer/{page}/{limit}")] 
         HttpRequestData req, int page, int limit)
@@ -51,8 +56,33 @@ public class GetCustomer
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
 
+
+
+
+
+
         try
         {
+            var db = Connection.GetDatabase();
+            if (!db.KeyExists("useCounter"))
+            {
+                db.StringSet("useCounter", 0);
+            }
+
+            long.TryParse(db.StringGet("useCounter"), out long countValue);
+            db.StringSet("useCounter", countValue + 1);
+
+            //string redisConnection = Environment.GetEnvironmentVariable("RedisConnection");
+            //var redis = ConnectionMultiplexer.Connect(redisConnection);
+            //var db = redis.GetDatabase();
+            // db.StringSet("foo", "bar");
+            // string redisResult = db.StringGet("foo");
+
+
+
+
+
+
             FilterAndSortValues? filterAndSortConfig = await GetRequestByBody.GetBody<FilterAndSortValues>(req);
 
             PaginationObject output = new();
@@ -82,7 +112,6 @@ public class GetCustomer
                 //    //filterOr = Builders<Customer>.Filter.(filter, textFilter2);
                 //    filter = Builders<Customer>.Filter.And(filter, likeFilter);
                 //}
-
 
                 if (filters != null)
                 {
@@ -134,15 +163,17 @@ public class GetCustomer
                 HasMore = page + limit <= totalCount
             };
 
+            foreach (var item in output.Data)
+            {
+                item.vehicle += string.IsNullOrEmpty(redisResult) ? "" : redisResult;
+            }
+
             return await API.Success(response, output);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Runtime error:");
             return await API.Fail(response, System.Net.HttpStatusCode.BadRequest, ex.InnerException == null ? ex.Message : ex.InnerException.Message);
         }
-
-
-
-
     }
 }
