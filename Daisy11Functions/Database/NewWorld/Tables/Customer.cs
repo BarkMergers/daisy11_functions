@@ -5,9 +5,9 @@ namespace Daisy11Functions.Database.NewWorld.Tables
 {
     public class Customer
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId iid { get; set; }
+       // [BsonId]
+       // [BsonRepresentation(BsonType.ObjectId)]
+       // public ObjectId iid { get; set; }
         public long id { get; set; }
         public string? vehicle { get; set; }
         public string? increasedate { get; set; }

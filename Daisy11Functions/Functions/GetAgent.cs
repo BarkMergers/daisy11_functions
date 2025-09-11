@@ -49,15 +49,7 @@ public class GetAgent
 
         try
         {
-
-
-
-
-
             Tenant? tenant = _getTenantDetail.Data(req);
-
-
-
 
             if (tenant == null)
                 throw new Exception("Unknown tenant");

@@ -63,27 +63,26 @@ public class GetCustomer
 
         try
         {
-            var db = Connection.GetDatabase();
+
+            /*
+            IDatabase db = Connection.GetDatabase();
             if (!db.KeyExists("useCounter"))
             {
                 db.StringSet("useCounter", 0);
             }
-
             long.TryParse(db.StringGet("useCounter"), out long countValue);
             db.StringSet("useCounter", countValue + 1);
+            */
 
-            //string redisConnection = Environment.GetEnvironmentVariable("RedisConnection");
-            //var redis = ConnectionMultiplexer.Connect(redisConnection);
-            //var db = redis.GetDatabase();
-            // db.StringSet("foo", "bar");
-            // string redisResult = db.StringGet("foo");
-
+            long countValue = 0;
 
 
 
 
 
             FilterAndSortValues? filterAndSortConfig = await GetRequestByBody.GetBody<FilterAndSortValues>(req);
+
+            /*
 
             PaginationObject output = new();
             MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
@@ -151,8 +150,60 @@ public class GetCustomer
 
             output.Data = sortedData.Skip(page).Limit(limit).ToList();
 
-            //int totalCount = _projectContext.Customer.Count();
-            //output.Data = _projectContext.Customer.OrderBy(x => x.id).Skip(page).Take(limit).ToList();
+
+            */
+
+
+
+            PaginationObject output = new();
+            int totalCount = _projectContext.Customer.Count();
+
+            IQueryable<Customer> unSortedData = _projectContext.Customer;
+
+
+
+            IOrderedQueryable<Customer> sortedData;
+
+            if (filterAndSortConfig == null)
+            {
+                sortedData = unSortedData.OrderBy(x => x.id);
+            }
+            else
+            {
+                Dictionary<string, object>? filters = filterAndSortConfig.filterValues;
+
+                if (filters != null)
+                {
+                    if (filters.ContainsKey("status") && !string.IsNullOrWhiteSpace(filters["status"].ToString()))
+                    {
+                        unSortedData = unSortedData.Where(x => x.status == filters["status"].ToString());
+                    }
+
+                    if (filters.ContainsKey("issuer") && !string.IsNullOrWhiteSpace(filters["issuer"].ToString()))
+                    {
+                        unSortedData = unSortedData.Where(x => x.issuer == filters["issuer"].ToString());
+                    }
+
+                    if (filters.ContainsKey("fineOperator") && !string.IsNullOrWhiteSpace(filters["fineOperator"].ToString()))
+                    {
+                        unSortedData = unSortedData.Where(x => x.fineoperator == filters["fineOperator"].ToString());
+                    }
+                }
+
+
+
+                switch (filterAndSortConfig?.SortValues?.FieldName)
+                {
+                    case "id": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.OrderBy(x => x.id) : unSortedData.OrderByDescending(bson => bson.id); break;
+                    case "vehicle": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.OrderBy(bson => bson.vehicle) : unSortedData.OrderByDescending(bson => bson.vehicle); break;
+                    case "increasedate": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.OrderBy(bson => bson.increasedate) : unSortedData.OrderByDescending(bson => bson.increasedate); break;
+                    case "fineoperator": sortedData = filterAndSortConfig.SortValues.SortOrder == "ascending" ? unSortedData.OrderBy(bson => bson.fineoperator) : unSortedData.OrderByDescending(bson => bson.fineoperator); break;
+                    default: sortedData = unSortedData.OrderBy(bson => bson.id); break;
+                }
+            }
+
+            output.Data = sortedData.Skip(page).Take(limit).ToList();
+
 
             output.Pagination = new PaginationData()
             {
@@ -165,7 +216,7 @@ public class GetCustomer
 
             foreach (var item in output.Data)
             {
-                item.vehicle += string.IsNullOrEmpty(redisResult) ? "" : redisResult;
+                item.vehicle +=  $" - #{countValue}";
             }
 
             return await API.Success(response, output);

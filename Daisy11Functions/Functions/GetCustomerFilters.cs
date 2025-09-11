@@ -10,6 +10,7 @@ using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using System.Net.Sockets;
+using Microsoft.EntityFrameworkCore;
 
 namespace Daisy11Functions;
 
@@ -41,14 +42,25 @@ public class GetCustomerFilter
 
         try
         {
-            MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
+
+            //MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
+            //CustomerFilterData output = new()
+            //{
+            //    StatusList = await GetDistinctList(dbClient, "status"),
+            //    FineOperatorList = await GetDistinctList(dbClient, "fineoperator"),
+            //    IssuerList = await GetDistinctList(dbClient, "issuer")
+            //};
+
 
             CustomerFilterData output = new()
             {
-                StatusList = await GetDistinctList(dbClient, "status"),
-                FineOperatorList = await GetDistinctList(dbClient, "fineoperator"),
-                IssuerList = await GetDistinctList(dbClient, "issuer")
+                StatusList = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string>(),
+                FineOperatorList = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string>(),
+                IssuerList = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string>()
             };
+
+
+
 
             return await API.Success(response, output);
         }
