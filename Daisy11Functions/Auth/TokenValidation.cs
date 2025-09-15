@@ -6,7 +6,7 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Daisy11Functions.Helpers
+namespace Daisy11Functions.Auth
 {
     /*
      *  dotnet add package Microsoft.IdentityModel.Tokens
@@ -27,16 +27,29 @@ namespace Daisy11Functions.Helpers
 
             if (cookieToken == null || cookieToken.Value == null)
             {
-                //HttpResponseData unauthorized = req.CreateResponse(HttpStatusCode.NotAcceptable);
-                //await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
-                return null; // unauthorized;
-                // Returning NULL so that it does not care if you are logged in or not - Not good for live!
+                if (false)
+                {
+                    // Returning NULL so that it does not care if you are logged in or not - Not good for live!
+                    //return null;
+                }
+                else
+                {
+                    HttpResponseData unauthorized = req.CreateResponse(HttpStatusCode.NotAcceptable);
+                    await unauthorized.WriteStringAsync("Missing or invalid Authorization header.");
+                    return unauthorized;
+                }
             }
 
             string authHeader = cookieToken.Value;
+            string token = authHeader.Trim();
+
             string? tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
             string? backendClientID = Environment.GetEnvironmentVariable("BACKEND_CLIENT_ID");
-            string token = authHeader.Trim();
+            if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(backendClientID))
+                throw new Exception("Ensure environmental variables for TENANT_ID and BACKEND_CLIENT_ID exist");
+
+
+
 
             ConfigurationManager<OpenIdConnectConfiguration> configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                 $"https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration",

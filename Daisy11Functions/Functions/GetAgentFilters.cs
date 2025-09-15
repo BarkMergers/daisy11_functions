@@ -10,6 +10,7 @@ using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using System.Net.Sockets;
+using Daisy11Functions.Auth;
 
 namespace Daisy11Functions;
 

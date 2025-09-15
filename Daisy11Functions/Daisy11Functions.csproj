@@ -7,7 +7,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Database\DataMigrator\Migrations\0001-CreateTables.sql" />
+    <None Remove="Database\DataMigrator\Migrations\0002-Create inventory table.sql" />
+    <None Remove="Database\DataMigrator\Migrations\0003-Create products table.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Database\DataMigrator\Migrations\0001-CreateTables.sql" />
+    <EmbeddedResource Include="Database\DataMigrator\Migrations\0002-Create inventory table.sql" />
+    <EmbeddedResource Include="Database\DataMigrator\Migrations\0003-Create products table.sql" />
+  </ItemGroup>
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="dbup" Version="5.0.41" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
@@ -20,6 +31,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.4.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

@@ -1,3 +1,4 @@
+using Daisy11Functions.Auth;
 using Daisy11Functions.Database.Archive.Tables;
 using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;

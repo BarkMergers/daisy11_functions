@@ -12,6 +12,12 @@ namespace Daisy11Functions.Database.NewWorld
         public DbSet<Agent> Agent { get; set; }
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Tenant> Tenant { get; set; }
+        public DbSet<Product> Product { get; set; }
+        public DbSet<Inventory> Inventory { get; set; }
+
+
+
+
 
         public async Task<int> ExecuteSqlRawAsync(string sql)
         {

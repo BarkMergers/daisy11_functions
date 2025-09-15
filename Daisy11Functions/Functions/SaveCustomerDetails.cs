@@ -7,6 +7,7 @@ using Daisy11Functions.Helpers;
 using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
 using Microsoft.EntityFrameworkCore;
+using Daisy11Functions.Auth;
 
 namespace Daisy11Functions;
 

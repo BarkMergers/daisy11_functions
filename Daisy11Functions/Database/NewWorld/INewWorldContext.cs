@@ -9,6 +9,11 @@ namespace Daisy11Functions.Database.NewWorld
         DbSet<Agent> Agent { get; set; }
         DbSet<Customer> Customer { get; set; }
         DbSet<Tenant> Tenant { get; set; }
+        DbSet<Product> Product { get; set; }
+        DbSet<Inventory> Inventory { get; set; }
+
+
+
         int SaveChanges();
         Task<IDbContextTransaction> BeginTransaction();
         Task<int> ExecuteSqlRawAsync(string sql);

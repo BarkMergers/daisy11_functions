@@ -11,6 +11,7 @@ using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using System.Net.Sockets;
 using Microsoft.EntityFrameworkCore;
+using Daisy11Functions.Auth;
 
 namespace Daisy11Functions;
 
