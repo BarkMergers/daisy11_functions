@@ -7,16 +7,14 @@ namespace Daisy11Functions.Auth;
 
 public class GetTenantDetail
 {
-    private readonly ILogger<GetAgent> _logger;
+    private readonly ILogger<GetAgentDetails> _logger;
     private readonly INewWorldContext _projectContext;
 
-
-    public GetTenantDetail(ILogger<GetAgent> logger, INewWorldContext projectContext)
+    public GetTenantDetail(ILogger<GetAgentDetails> logger, INewWorldContext projectContext)
     {
         _logger = logger;
         _projectContext = projectContext;
     }
-
 
     public Tenant? Data(HttpRequestData req)
     {

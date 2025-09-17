@@ -1,4 +1,5 @@
-﻿using Daisy11Functions.Database.NewWorld.Tables;
+﻿using Daisy11Functions.Database.Archive.Tables;
+using Daisy11Functions.Database.NewWorld.Tables;
 
 namespace Daisy11Functions.Database.Pagination
 {

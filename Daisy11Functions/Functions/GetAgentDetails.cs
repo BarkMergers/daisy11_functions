@@ -9,9 +9,9 @@ using Daisy11Functions.Database.NewWorld.Tables;
 
 namespace Daisy11Functions;
 
-public class GetAgent
+public class GetAgentDetails
 {
-    private readonly ILogger<GetAgent> _logger;
+    private readonly ILogger<GetAgentDetails> _logger;
     private readonly INewWorldContext _projectContext;
     private readonly GetTenantDetail _getTenantDetail;
 
@@ -30,7 +30,7 @@ public class GetAgent
 
 
 
-    public GetAgent(ILogger<GetAgent> logger, INewWorldContext projectContext, GetTenantDetail getTenantDetail)
+    public GetAgentDetails(ILogger<GetAgentDetails> logger, INewWorldContext projectContext, GetTenantDetail getTenantDetail)
     {
         _logger = logger;
         _projectContext = projectContext;
@@ -40,8 +40,8 @@ public class GetAgent
 
 
 
-    [Function("GetAgent")]
-    public async Task<HttpResponseData> Run_GetAgent([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetAgent/{agent}")] 
+    [Function("GetAgentDetails")]
+    public async Task<HttpResponseData> Run_GetAgentDetails([HttpTrigger(AuthorizationLevel.Anonymous, "options", "get", Route = "GetAgentDetails/{agent}")] 
             HttpRequestData req, string? agent)
     {
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;

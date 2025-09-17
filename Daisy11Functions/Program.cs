@@ -39,4 +39,17 @@ builder.Services.AddDbContext<ArchiveContext>(options => options.UseSqlServer(ar
 builder.Services.AddScoped<IArchiveContext, ArchiveContext>();
 builder.Services.AddScoped<GetTenantDetail, GetTenantDetail>();
 
+
+
+
+string? maintenanceConnection = Environment.GetEnvironmentVariable("MaintenanceDatabase");
+if (string.IsNullOrWhiteSpace(maintenanceConnection))
+    logger.LogInformation("Environmental variable 'MaintenanceDatabase' is not set");
+
+builder.Services.AddDbContext<MaintenanceContext>(options => options.UseSqlServer(maintenanceConnection));
+builder.Services.AddScoped<IMaintenanceContext, MaintenanceContext>();
+
+
+
+
 builder.Build().Run();

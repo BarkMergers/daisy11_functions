@@ -1,27 +1,3 @@
-
-/****** Object:  Table [dbo].[Agent]    Script Date: 03/09/2025 23:20:49 ******/
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Agent' AND schema_id = SCHEMA_ID('dbo'))
-BEGIN
-    CREATE TABLE [dbo].[Agent](
-        [id] [bigint] IDENTITY(1,1) NOT NULL,
-        [agent] [nvarchar](50) NULL,
-        [role] [nvarchar](50) NULL,
-        [tenantid] [bigint] NULL,
-        [active] [bit] NULL,
-        [firstname] [nvarchar](50) NULL,
-        [lastname] [nvarchar](50) NULL,
-        [age] [int] NULL,
-    CONSTRAINT [PK_Agent] PRIMARY KEY CLUSTERED 
-    (
-        [id] ASC
-    )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-    ) ON [PRIMARY]
-END
-
-
-
-
-
 /****** Object:  Table [dbo].[Customer]    Script Date: 03/09/2025 23:21:06 ******/
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Customer' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
@@ -41,8 +17,6 @@ BEGIN
     )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
     ) ON [PRIMARY]
 
-
-
 	insert into customer (vehicle, increasedate, fineoperator, fineamount, age, power, issuer, status)
 	values 
 
@@ -56,28 +30,4 @@ BEGIN
 	('SH56 PME', '20250408T1500', 'YJ', 46, 2, 34,  'External' , 'Processing'),
 	('GR19 KUY', '20250411T1500', 'PW', 62, 3, 81,  'External' , 'Complete'),
 	('LG29 GRO', '20250432T1500', 'CE', 86, 4, 60,  'Internal' , 'To load')
-
 END
-
-
-
-
-
-/****** Object:  Table [dbo].[Tenant]    Script Date: 03/09/2025 23:21:37 ******/
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Tenant' AND schema_id = SCHEMA_ID('dbo'))
-BEGIN
-    CREATE TABLE [dbo].[Tenant](
-        [id] [bigint] IDENTITY(1,1) NOT NULL,
-        [tenantname] [nvarchar](50) NULL,
-        [active] [bit] NULL,
-        [subdomain] [nvarchar](50) NULL,
-    CONSTRAINT [PK_Tenant] PRIMARY KEY CLUSTERED 
-    (
-        [id] ASC
-    )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-    ) ON [PRIMARY]
-END
-
-
-
-

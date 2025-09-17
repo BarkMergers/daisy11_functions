@@ -17,9 +17,9 @@ namespace Daisy11Functions;
 
 public class CustomerFilterData
 {
-    public List<string>? StatusList { get; set; }
-    public List<string>? FineOperatorList { get; set; }
-    public List<string>? IssuerList { get; set; }
+    public List<string>? Status { get; set; }
+    public List<string>? FineOperator { get; set; }
+    public List<string>? Issuer { get; set; }
 }
 
 
@@ -55,9 +55,9 @@ public class GetCustomerFilter
 
             CustomerFilterData output = new()
             {
-                StatusList = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string>(),
-                FineOperatorList = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string>(),
-                IssuerList = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string>()
+                Status = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string>(),
+                FineOperator = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string>(),
+                Issuer = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string>()
             };
 
 

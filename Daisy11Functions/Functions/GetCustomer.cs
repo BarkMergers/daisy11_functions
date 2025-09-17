@@ -7,6 +7,7 @@ using Daisy11Functions.Helpers;
 using Daisy11Functions.Models.FilterAndSort;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using NewWorldFunctions.Helpers;
@@ -157,7 +158,7 @@ public class GetCustomer
 
 
             PaginationObject output = new();
-            int totalCount = _projectContext.Customer.Count();
+            int totalCount = 0; // _projectContext.Customer.Count();
 
             IQueryable<Customer> unSortedData = _projectContext.Customer;
 
@@ -167,6 +168,7 @@ public class GetCustomer
 
             if (filterAndSortConfig == null)
             {
+                totalCount = await unSortedData.CountAsync();
                 sortedData = unSortedData.OrderBy(x => x.id);
             }
             else
@@ -191,7 +193,7 @@ public class GetCustomer
                     }
                 }
 
-
+                totalCount = await unSortedData.CountAsync();
 
                 switch (filterAndSortConfig?.SortValues?.FieldName)
                 {
