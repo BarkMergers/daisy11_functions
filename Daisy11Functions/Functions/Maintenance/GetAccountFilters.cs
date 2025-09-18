@@ -14,14 +14,15 @@ using Daisy11Functions.Auth;
 using Daisy11Functions.Database;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
+using Daisy11Functions.Models.FilterAndSort;
 
 namespace Daisy11Functions;
 
 public class AccountFilterData
 {
-    public List<string?>? AccountName { get; set; }
-    public List<string?>? RegistrationNumber { get; set; }
-    public List<string?>? VATRegNo { get; set; }
+    public FilterDescription AccountName { get; set; } = new();
+    public FilterDescription RegistrationNumber { get; set; } = new();
+    public FilterDescription VATRegNo { get; set; } = new();
 }
 
 public class GetAccountFilter
@@ -44,12 +45,19 @@ public class GetAccountFilter
 
         try
         {
-            AccountFilterData output = new()
-            {
-                AccountName = await _maintenanceContext.Account.Select(x => x.AccountName).Distinct().ToListAsync(),
-                RegistrationNumber = await _maintenanceContext.Account.Select(x => x.RegistrationNumber).Distinct().ToListAsync(),
-                VATRegNo = await _maintenanceContext.Account.Select(x => x.VATRegNo).Distinct().ToListAsync()
-            };
+            AccountFilterData output = new();
+
+            output.AccountName.Type = "list";
+            output.RegistrationNumber.Type = "list";
+            output.VATRegNo.Type = "list";
+            output.AccountName.Data = await _maintenanceContext.Account.Select(x => x.AccountName).Distinct().ToListAsync();
+            output.RegistrationNumber.Data = await _maintenanceContext.Account.Select(x => x.RegistrationNumber).Distinct().ToListAsync();
+            output.VATRegNo.Data = await _maintenanceContext.Account.Select(x => x.VATRegNo).Distinct().ToListAsync();
+
+
+
+
+
 
             return await API.Success(response, output);
         }

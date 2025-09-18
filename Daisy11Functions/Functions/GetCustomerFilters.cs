@@ -1,26 +1,29 @@
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using NewWorldFunctions.Helpers;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using Daisy11Functions.Helpers;
-using System.Net;
+using Daisy11Functions.Auth;
 using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
-using Daisy11Functions.Database.Pagination;
-using System.Net.Sockets;
+using Daisy11Functions.Helpers;
+using Daisy11Functions.Models.FilterAndSort;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
-using Daisy11Functions.Auth;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using NewWorldFunctions.Helpers;
 
 namespace Daisy11Functions;
 
+
+
 public class CustomerFilterData
 {
-    public List<string>? Status { get; set; }
-    public List<string>? FineOperator { get; set; }
-    public List<string>? Issuer { get; set; }
+    public FilterDescription Status { get; set; } = new();
+    public FilterDescription FineOperator { get; set; } = new();
+    public FilterDescription Issuer { get; set; } = new();
 }
+
+
+
+
 
 
 public class GetCustomerFilter
@@ -47,18 +50,20 @@ public class GetCustomerFilter
             //MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
             //CustomerFilterData output = new()
             //{
-            //    StatusList = await GetDistinctList(dbClient, "status"),
+            //    Status. = await GetDistinctList(dbClient, "status"),
             //    FineOperatorList = await GetDistinctList(dbClient, "fineoperator"),
             //    IssuerList = await GetDistinctList(dbClient, "issuer")
             //};
 
 
-            CustomerFilterData output = new()
-            {
-                Status = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string>(),
-                FineOperator = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string>(),
-                Issuer = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string>()
-            };
+            CustomerFilterData output = new();
+
+            output.Status.Type = "list";
+            output.FineOperator.Type = "list";
+            output.Issuer.Type = "list";
+            output.Status.Data = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string?>();
+            output.FineOperator.Data = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string?>();
+            output.Issuer.Data = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string?>();
 
 
 

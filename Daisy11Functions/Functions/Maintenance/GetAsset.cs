@@ -46,8 +46,8 @@ public class GetAsset
 
 
     [Function("GetAsset")]
-    public async Task<HttpResponseData> Run_GetAsset([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "GetAsset/{firstRecord}/{limit}")] 
-        HttpRequestData req, int firstRecord, int limit)
+    public async Task<HttpResponseData> Run_GetAsset([HttpTrigger(AuthorizationLevel.Anonymous, "options", "post", Route = "GetAsset/{page}/{limit}")] 
+        HttpRequestData req, int page, int limit)
     {
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
@@ -105,13 +105,13 @@ public class GetAsset
                 }
             }
 
-            output.Data = sortedData.Skip(firstRecord).Take(limit).ToList();
+            output.Data = sortedData.Skip(page * limit).Take(limit).ToList();
 
 
             output.Pagination = new PaginationData()
             {
-                PageId = firstRecord / limit,
-                CurrentPage = firstRecord,
+                PageId = page / limit,
+                CurrentPage = page,
                 TotalItems = limit,
                 TotalPages = -1, // Convert.ToInt32(decimal.Ceiling(decimal.Divide(totalCount, limit))),
                 HasMore = true //page + limit <= totalCount

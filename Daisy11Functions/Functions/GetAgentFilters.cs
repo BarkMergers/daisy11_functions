@@ -11,14 +11,15 @@ using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using System.Net.Sockets;
 using Daisy11Functions.Auth;
+using Daisy11Functions.Models.FilterAndSort;
 
 namespace Daisy11Functions;
 
 public class AgentFilterData
 {
-    public List<string>? Name { get; set; }
-    public List<string>? Job { get; set; }
-    public List<string>? Color { get; set; }
+    public FilterDescription Name { get; set; } = new();
+    public FilterDescription Job { get; set; } = new();
+    public FilterDescription Color { get; set; } = new();
 }
 
 
@@ -42,12 +43,30 @@ public class GetAgentFilter
 
         try
         {
-            AgentFilterData output = new()
+            AgentFilterData output = new();
+
+
+            output.Name = new FilterDescription()
             {
-                Name = new List<string>() { "Hart Hagerty", "Brice Swyre", "Marjy Frencz", "Yancy Tear" },
-                Color = new List<string>() { "Red", "Purple" },
-                Job = new List<string>() { "Zemlak, Daniel and Leannon", "Caroll Group", "Rowe-Schoen", "Wyman-Ledner" }
+                Type = "list",
+                Description = "Agent Name",
+                Data = ["Hart Hagerty", "Brice Swyre", "Marjy Frencz", "Yancy Tear"]
             };
+
+            output.Color = new FilterDescription()
+            {
+                Type = "multilist",
+                Description = "Colour",
+                Data = ["Red", "Purple"]
+            };
+
+            output.Job = new FilterDescription()
+            {
+                Type = "list",
+                Description = "Job",
+                Data = ["Zemlak, Daniel and Leannon", "Caroll Group", "Rowe-Schoen", "Wyman-Ledner"]
+            };
+
 
             return await API.Success(response, output);
         }

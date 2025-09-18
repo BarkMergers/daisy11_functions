@@ -1,27 +1,21 @@
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using NewWorldFunctions.Helpers;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using Daisy11Functions.Helpers;
-using System.Net;
-using Daisy11Functions.Database.NewWorld;
-using Daisy11Functions.Database.NewWorld.Tables;
-using Daisy11Functions.Database.Pagination;
-using System.Net.Sockets;
 using Daisy11Functions.Auth;
 using Daisy11Functions.Database;
-using Grpc.Core;
+using Daisy11Functions.Helpers;
+using Daisy11Functions.Models.FilterAndSort;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using NewWorldFunctions.Helpers;
 
 namespace Daisy11Functions;
 
 public class AssetFilterData
 {
-    public List<string?>? AssetName { get; set; }
-    public List<int>? AssetTypeId { get; set; }
-    public List<string?>? RegistrationNumber { get; set; }
+    public FilterDescription AssetName { get; set; } = new();
+    public FilterDescription AssetTypeId { get; set; } = new();
+    public FilterDescription RegistrationNumber { get; set; } = new();
 }
 
 public class GetAssetFilter
@@ -44,12 +38,16 @@ public class GetAssetFilter
 
         try
         {
-            AssetFilterData output = new()
-            {
-                AssetName = await _maintenanceContext.Asset.Select(x => x.AssetName).Distinct().ToListAsync(),
-                AssetTypeId = await _maintenanceContext.Asset.Select(x => x.AssetTypeId).Distinct().ToListAsync(),
-                RegistrationNumber = await _maintenanceContext.Asset.Select(x => x.RegistrationNumber).Distinct().ToListAsync()
-            };
+            AssetFilterData output = new();
+
+            output.AssetName.Type = "list";
+            output.AssetTypeId.Type = "numberlist";
+            output.RegistrationNumber.Type = "list";
+            output.AssetName.Data = await _maintenanceContext.Asset.Select(x => x.AssetName).Distinct().ToListAsync();
+            output.AssetTypeId.IntData = await _maintenanceContext.Asset.Select(x => x.AssetTypeId).Distinct().ToListAsync();
+            output.RegistrationNumber.Data = await _maintenanceContext.Asset.Select(x => x.RegistrationNumber).Distinct().ToListAsync();
+
+
 
             return await API.Success(response, output);
         }

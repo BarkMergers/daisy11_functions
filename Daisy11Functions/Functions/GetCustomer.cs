@@ -205,7 +205,7 @@ public class GetCustomer
                 }
             }
 
-            output.Data = sortedData.Skip(page).Take(limit).ToList();
+            output.Data = sortedData.Skip(page * limit).Take(limit).ToList();
 
 
             output.Pagination = new PaginationData()
