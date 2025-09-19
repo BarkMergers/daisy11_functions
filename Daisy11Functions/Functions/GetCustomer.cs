@@ -5,6 +5,7 @@ using Daisy11Functions.Database.NewWorld.Tables;
 using Daisy11Functions.Database.Pagination;
 using Daisy11Functions.Helpers;
 using Daisy11Functions.Models.FilterAndSort;
+using Daisy11Functions.Models.FilterAndSort.StructuredData;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
@@ -19,19 +20,12 @@ using System.Linq.Expressions;
 
 namespace Daisy11Functions;
 
-
-
-
-
-
-
 public class GetCustomer
 {
+    public static ConnectionMultiplexer Connection => lazyConnection.Value;
+
     private readonly ILogger<GetCustomer> _logger;
     private readonly INewWorldContext _projectContext;
-
-
-
 
     private static readonly Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
     {
@@ -40,12 +34,6 @@ public class GetCustomer
             throw new Exception("RedisConnection not found/configured");
         return ConnectionMultiplexer.Connect(redisConnection);
     });
-
-    public static ConnectionMultiplexer Connection => lazyConnection.Value;
-
-
-
-
 
 
     public GetCustomer(ILogger<GetCustomer> logger, INewWorldContext projectContext)
@@ -61,12 +49,6 @@ public class GetCustomer
     {
         if (CORS.IsPreFlight(req, out HttpResponseData response)) return response;
         if (await TokenValidation.Validate(req) is { } validation) return validation;
-
-
-
-
-
-
         try
         {
 
@@ -81,10 +63,6 @@ public class GetCustomer
             */
 
             long countValue = 0;
-
-
-
-
 
             FilterAndSortValues? filterAndSortConfig = await GetRequestByBody.GetBody<FilterAndSortValues>(req);
 
@@ -165,9 +143,6 @@ public class GetCustomer
             int totalCount = 0; // _projectContext.Customer.Count();
 
             IQueryable<Customer> unSortedData = _projectContext.Customer;
-
-
-
             IOrderedQueryable<Customer> sortedData;
 
             if (filterAndSortConfig == null)
@@ -206,18 +181,14 @@ public class GetCustomer
                     {
                         const string modeKey = "mode";
 
+                        GetCustomerDateTimeFilter filter = Newtonsoft.Json.JsonConvert.DeserializeObject<GetCustomerDateTimeFilter>(filters[dateTimeKeyName]!.ToString()!)!;
 
-                        JObject obj = JObject.Parse(filters[dateTimeKeyName].ToString()!);
-
-                        string mode = obj[modeKey]!.ToString();
-                        switch (mode)
+                        switch (filter.Mode.ToLower())
                         {
                             case "before":
                             case "after":
-                                unSortedData = unSortedData.Where(GetDateTimeFilter(mode, obj["date"]!.ToString()));
-                                break;
                             case "between":
-                                unSortedData = unSortedData.Where(GetDateTimeFilter(mode, obj["from"]!.ToString(), obj["to"]!.ToString()));
+                                unSortedData = unSortedData.Where(GetDateTimeFilter(filter));
                                 break;
                             default:
                                 break; // Log that something isn't configured correctly
@@ -263,53 +234,55 @@ public class GetCustomer
         }
     }
 
-    private Expression<Func<Customer, bool>> GetDateTimeFilter(string mode, string beforeDate, string? afterDate = null)
+
+    private Expression<Func<Customer, bool>> GetDateTimeFilter(GetCustomerDateTimeFilter filter)
     {
-        // Check to make sure required values are not empty
-        if (string.IsNullOrEmpty(mode) || string.IsNullOrEmpty(beforeDate))
-            return null!;
+        if (string.IsNullOrWhiteSpace(filter.Mode))
+            return x => false;
 
-        // Check to make sure date is valid
-        if (!DateTime.TryParse(beforeDate, out DateTime beforeResult))
-            return null!;
-
-
-        DateTime afterResult = default(DateTime);
-        // This checks to make sure an input is valid if provided
-        if (!string.IsNullOrEmpty(afterDate) && !DateTime.TryParse(afterDate, out afterResult)) 
-            return null!;
-
-        if (afterResult.Ticks != default(DateTime).Ticks) // Only happens if an "after" date is provided
+        return filter.Mode.ToLower() switch
         {
-            DateTime tempBefore, tempAfter;
-            if (beforeResult > afterResult) // If wrong way around, correct them by swapping the values
-            {
-                tempBefore = afterResult;
-                tempAfter = beforeResult;
+            "before" => GetBeforeDateTimeFiltered(filter),
+            "after" => GetAfterDateTimeFiltered(filter),
+            "between" => GetBetweenDateFilter(filter),
+            _ => x => false
+        };
+    }
 
-                afterResult = tempAfter;
-                beforeResult = tempBefore;
-            }
+
+    private Expression<Func<Customer, bool>> GetBeforeDateTimeFiltered(GetCustomerDateTimeFilter filter)
+    {
+        if (!DateTime.TryParse(filter.Date, out var result))
+            return x => false;
+
+        return x => x.increasedate.HasValue && x.increasedate.Value.Date <= result.Date;
+    }
+
+
+    private Expression<Func<Customer, bool>> GetAfterDateTimeFiltered(GetCustomerDateTimeFilter filter)
+    {
+        if (!DateTime.TryParse(filter.Date, out var result))
+            return x => false;
+
+        return x => x.increasedate.HasValue && x.increasedate.Value.Date >= result.Date;
+    }
+
+
+    private Expression<Func<Customer, bool>> GetBetweenDateFilter(GetCustomerDateTimeFilter filter)
+    {
+        if (!DateTime.TryParse(filter.From, out var fromDate) || !DateTime.TryParse(filter.To, out var toDate))
+            return x => false;
+
+        // Swap if fromDate > toDate
+        if (fromDate > toDate)
+        {
+            var temp = fromDate;
+            fromDate = toDate;
+            toDate = temp;
         }
 
-        switch (mode.ToLower())
-        {
-            case "before":
-                return x => x.increasedate.HasValue
-                            && x.increasedate.Value.Date <= beforeResult.Date;
-
-            case "after":
-                return x => x.increasedate.HasValue 
-                            && x.increasedate.Value.Date >= beforeResult.Date;
-
-            case "between":
-                return x => x.increasedate.HasValue
-                            && afterResult.Ticks != default(DateTime).Ticks // Checks to make sure a value has been parsed
-                            && x.increasedate.Value.Date >= beforeResult.Date
-                            && x.increasedate.Value.Date <= afterResult.Date;
-
-            default:
-                return x => false;
-        }
+        return x => x.increasedate.HasValue
+            && x.increasedate.Value.Date >= fromDate.Date
+            && x.increasedate.Value.Date <= toDate.Date;
     }
 }
