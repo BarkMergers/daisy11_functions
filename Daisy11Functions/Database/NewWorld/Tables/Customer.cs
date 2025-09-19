@@ -10,7 +10,7 @@ namespace Daisy11Functions.Database.NewWorld.Tables
        // public ObjectId iid { get; set; }
         public long id { get; set; }
         public string? vehicle { get; set; }
-        public string? increasedate { get; set; }
+        public DateTime? increasedate { get; set; }
         public string? fineoperator { get; set; }
         public decimal fineamount { get; set; }
         public decimal age { get; set; }

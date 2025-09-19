@@ -9,9 +9,13 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson.IO;
 using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
 using NewWorldFunctions.Helpers;
 using StackExchange.Redis;
+using System.Drawing.Text;
+using System.Linq.Expressions;
 
 namespace Daisy11Functions;
 
@@ -175,21 +179,49 @@ public class GetCustomer
             {
                 Dictionary<string, object>? filters = filterAndSortConfig.filterValues;
 
+                const string statusKeyName = "status";
+                const string issuerKeyName = "issuer";
+                const string fineOpKeyName = "fineOperator";
+                const string dateTimeKeyName = "dateTime";
+
+
                 if (filters != null)
                 {
-                    if (filters.ContainsKey("status") && !string.IsNullOrWhiteSpace(filters["status"].ToString()))
+                    if (filters.ContainsKey(statusKeyName) && !string.IsNullOrWhiteSpace(filters[statusKeyName].ToString()))
                     {
-                        unSortedData = unSortedData.Where(x => x.status == filters["status"].ToString());
+                        unSortedData = unSortedData.Where(x => x.status == filters[statusKeyName].ToString());
                     }
 
-                    if (filters.ContainsKey("issuer") && !string.IsNullOrWhiteSpace(filters["issuer"].ToString()))
+                    if (filters.ContainsKey(issuerKeyName) && !string.IsNullOrWhiteSpace(filters[issuerKeyName].ToString()))
                     {
-                        unSortedData = unSortedData.Where(x => x.issuer == filters["issuer"].ToString());
+                        unSortedData = unSortedData.Where(x => x.issuer == filters[issuerKeyName].ToString());
                     }
 
-                    if (filters.ContainsKey("fineOperator") && !string.IsNullOrWhiteSpace(filters["fineOperator"].ToString()))
+                    if (filters.ContainsKey(fineOpKeyName) && !string.IsNullOrWhiteSpace(filters[fineOpKeyName].ToString()))
                     {
-                        unSortedData = unSortedData.Where(x => x.fineoperator == filters["fineOperator"].ToString());
+                        unSortedData = unSortedData.Where(x => x.fineoperator == filters[fineOpKeyName].ToString());
+                    }
+
+                    if (filters.ContainsKey(dateTimeKeyName) && !string.IsNullOrEmpty(filters[dateTimeKeyName].ToString()))
+                    {
+                        const string modeKey = "mode";
+
+
+                        JObject obj = JObject.Parse(filters[dateTimeKeyName].ToString()!);
+
+                        string mode = obj[modeKey]!.ToString();
+                        switch (mode)
+                        {
+                            case "before":
+                            case "after":
+                                unSortedData = unSortedData.Where(GetDateTimeFilter(mode, obj["date"]!.ToString()));
+                                break;
+                            case "between":
+                                unSortedData = unSortedData.Where(GetDateTimeFilter(mode, obj["from"]!.ToString(), obj["to"]!.ToString()));
+                                break;
+                            default:
+                                break; // Log that something isn't configured correctly
+                        }
                     }
                 }
 
@@ -228,6 +260,56 @@ public class GetCustomer
         {
             _logger.LogError(ex, "Runtime error:");
             return await API.Fail(response, System.Net.HttpStatusCode.BadRequest, ex.InnerException == null ? ex.Message : ex.InnerException.Message);
+        }
+    }
+
+    private Expression<Func<Customer, bool>> GetDateTimeFilter(string mode, string beforeDate, string? afterDate = null)
+    {
+        // Check to make sure required values are not empty
+        if (string.IsNullOrEmpty(mode) || string.IsNullOrEmpty(beforeDate))
+            return null!;
+
+        // Check to make sure date is valid
+        if (!DateTime.TryParse(beforeDate, out DateTime beforeResult))
+            return null!;
+
+
+        DateTime afterResult = default(DateTime);
+        // This checks to make sure an input is valid if provided
+        if (!string.IsNullOrEmpty(afterDate) && !DateTime.TryParse(afterDate, out afterResult)) 
+            return null!;
+
+        if (afterResult.Ticks != default(DateTime).Ticks) // Only happens if an "after" date is provided
+        {
+            DateTime tempBefore, tempAfter;
+            if (beforeResult > afterResult) // If wrong way around, correct them by swapping the values
+            {
+                tempBefore = afterResult;
+                tempAfter = beforeResult;
+
+                afterResult = tempAfter;
+                beforeResult = tempBefore;
+            }
+        }
+
+        switch (mode.ToLower())
+        {
+            case "before":
+                return x => x.increasedate.HasValue
+                            && x.increasedate.Value.Date <= beforeResult.Date;
+
+            case "after":
+                return x => x.increasedate.HasValue 
+                            && x.increasedate.Value.Date >= beforeResult.Date;
+
+            case "between":
+                return x => x.increasedate.HasValue
+                            && afterResult.Ticks != default(DateTime).Ticks // Checks to make sure a value has been parsed
+                            && x.increasedate.Value.Date >= beforeResult.Date
+                            && x.increasedate.Value.Date <= afterResult.Date;
+
+            default:
+                return x => false;
         }
     }
 }

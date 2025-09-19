@@ -50,6 +50,10 @@ public class SaveCustomerDetails
             Customer? customerRecord = await _projectContext.Customer.FirstOrDefaultAsync(x => x.id == id);
             if (customerRecord != null)
             {
+                DateTime? increaseDateTime = null;
+                if (!string.IsNullOrEmpty(newCustomerData.increasedate) && DateTime.TryParse(newCustomerData.increasedate, out DateTime parsedDT))
+                    increaseDateTime = parsedDT;
+
                 customerRecord.vehicle = newCustomerData.vehicle;
                 customerRecord.power = newCustomerData.power;
                 customerRecord.issuer = newCustomerData.issuer;
@@ -57,7 +61,7 @@ public class SaveCustomerDetails
                 customerRecord.fineoperator = newCustomerData.fineoperator;
                 customerRecord.fineamount = newCustomerData.fineamount;
                 customerRecord.status = newCustomerData.status;
-                customerRecord.increasedate = newCustomerData.increasedate;
+                customerRecord.increasedate = increaseDateTime;
                 //var updateResult = await collection.ReplaceOneAsync(filter, customerRecord);
                 _projectContext.SaveChanges();
             }

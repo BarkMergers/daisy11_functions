@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using NewWorldFunctions.Helpers;
+using System.Linq.Expressions;
 
 namespace Daisy11Functions;
 
@@ -19,6 +20,7 @@ public class CustomerFilterData
     public FilterDescription Status { get; set; } = new();
     public FilterDescription FineOperator { get; set; } = new();
     public FilterDescription Issuer { get; set; } = new();
+    public FilterDescription DateTime { get; set; } = new();
 }
 
 
@@ -61,12 +63,10 @@ public class GetCustomerFilter
             output.Status.Type = "list";
             output.FineOperator.Type = "list";
             output.Issuer.Type = "list";
+            output.DateTime.Type = "datetime";
             output.Status.Data = await _projectContext.Customer.Select(x => x.status).Distinct().ToListAsync<string?>();
             output.FineOperator.Data = await _projectContext.Customer.Select(x => x.fineoperator).Distinct().ToListAsync<string?>();
             output.Issuer.Data = await _projectContext.Customer.Select(x => x.issuer).Distinct().ToListAsync<string?>();
-
-
-
 
             return await API.Success(response, output);
         }
