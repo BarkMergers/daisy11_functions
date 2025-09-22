@@ -179,8 +179,6 @@ public class GetCustomer
 
                     if (filters.ContainsKey(dateTimeKeyName) && !string.IsNullOrEmpty(filters[dateTimeKeyName].ToString()))
                     {
-                        const string modeKey = "mode";
-
                         GetCustomerDateTimeFilter filter = Newtonsoft.Json.JsonConvert.DeserializeObject<GetCustomerDateTimeFilter>(filters[dateTimeKeyName]!.ToString()!)!;
 
                         switch (filter.Mode.ToLower())
@@ -252,37 +250,31 @@ public class GetCustomer
 
     private Expression<Func<Customer, bool>> GetBeforeDateTimeFiltered(GetCustomerDateTimeFilter filter)
     {
-        if (!DateTime.TryParse(filter.Date, out var result))
+        if (!filter.DateDateTime.HasValue)
             return x => false;
 
-        return x => x.increasedate.HasValue && x.increasedate.Value.Date <= result.Date;
+        return x => x.increasedate.HasValue && x.increasedate.Value.Date <= filter.DateDateTime.Value.Date;
     }
 
 
     private Expression<Func<Customer, bool>> GetAfterDateTimeFiltered(GetCustomerDateTimeFilter filter)
     {
-        if (!DateTime.TryParse(filter.Date, out var result))
+        if (!filter.DateDateTime.HasValue)
             return x => false;
 
-        return x => x.increasedate.HasValue && x.increasedate.Value.Date >= result.Date;
+        return x => x.increasedate.HasValue && x.increasedate.Value.Date >= filter.DateDateTime.Value.Date;
     }
 
 
     private Expression<Func<Customer, bool>> GetBetweenDateFilter(GetCustomerDateTimeFilter filter)
     {
-        if (!DateTime.TryParse(filter.From, out var fromDate) || !DateTime.TryParse(filter.To, out var toDate))
+        if(!filter.FromDateTime.HasValue || !filter.ToDateTime.HasValue)
             return x => false;
 
-        // Swap if fromDate > toDate
-        if (fromDate > toDate)
-        {
-            var temp = fromDate;
-            fromDate = toDate;
-            toDate = temp;
-        }
+        filter.FixDates();
 
         return x => x.increasedate.HasValue
-            && x.increasedate.Value.Date >= fromDate.Date
-            && x.increasedate.Value.Date <= toDate.Date;
+            && x.increasedate.Value.Date >= filter.FromDateTime.Value.Date
+            && x.increasedate.Value.Date <= filter.ToDateTime.Value.Date;
     }
 }
