@@ -1,4 +1,5 @@
 ﻿using Daisy11Functions.Database.NewWorld.Tables;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -17,5 +18,11 @@ namespace Daisy11Functions.Database.NewWorld
         int SaveChanges();
         Task<IDbContextTransaction> BeginTransaction();
         Task<int> ExecuteSqlRawAsync(string sql);
+        Task<int> ExecuteSqlRawAsync(string sql, params SqlParameter[] paramList);
+
+
+        public System.Data.Common.DbConnection GetDbConnection();
+
+
     }
 }

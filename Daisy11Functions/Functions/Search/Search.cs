@@ -1,27 +1,73 @@
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using NewWorldFunctions.Helpers;
-using Daisy11Functions.Helpers;
 using Daisy11Functions.Auth;
 using Daisy11Functions.Database.NewWorld;
-using Daisy11Functions.Database.NewWorld.Tables;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Daisy11Functions.Helpers;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using NewWorldFunctions.Helpers;
 using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text;
-
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Net.Http;
-
 
 namespace Daisy11Functions;
 
+
+
+
+
+
+
+
 public class Search
 {
+
+
+    //private class AISolution
+    //{
+    //    public string? Table { get; set; }
+    //    public string[]? Columns { get; set; }
+    //    public Dictionary<string, string>? Filters { get; set; }
+    //    public string[]? Groupby { get; set; }
+    //    public Dictionary<string, string>? Sort { get; set; }
+    //    public string? Limit { get; set; }
+    //}
+
+    public class AISolution
+    {
+        public string? table { get; set; }
+        public List<string>? columns { get; set; }
+        public string? filter { get; set; }
+        public Dictionary<string, JsonElement>? paramsList { get; set; }
+        public List<string>? groupby { get; set; }
+        public List<string>? sort { get; set; }
+        public int? limit { get; set; }
+    }
+
+
+    /*
+    {
+    "table": "Asset",
+    "columns": ["ID", "AssetTypeID", "Weight", "Colour"],
+    "filters": { },
+    "groupby": [],
+    "sort": { },
+    "limit": null
+    }
+    */
+
+
+
+
+
+
+
+
+
+
+
+
+
     private readonly ILogger<GetAgentDetails> _logger;
     private readonly INewWorldContext _projectContext;
     private readonly GetTenantDetail _getTenantDetail;
@@ -52,49 +98,44 @@ public class Search
         //if (await TokenValidation.Validate(req, _logger) is { } validation) return validation;
 
 
-        // Read input text
-        ///string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-//var input = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
-       // string userPrompt = input["prompt"];
-
         // OpenAI API Key (use Azure Key Vault or configuration, don’t hardcode)
         string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
         httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", apiKey);
 
-
-        //string intro1 = @"
-
-        //    I have three database tables. 
-
-        //        Customer: The people who have signed up to my website to buy and use my services
-        //        Asset: The physical objects which my company owns and manages
-        //        Location: The locations at which assets are held
-
-        //    I want to create a data query based on a natural language prompt, to query one of these tables.
-        //    Which table should the query focus on? Answer in the format { ""table"": ""<tablename>"" }
-
-        //    Here is the prompt:
-
-        //" + prompt;
-
-
-        //var output1 = await runAI(intro1);
-
-
-
-
         string intro2 = @"
 
             I have the following tables which have the fields listed:
 
-            ""tables"": {
-                ""Customer"": [""ID"", ""Age""(int)(years old), ""Name""(string), ""Height""(int)(centimeters)],
-                ""Asset"": [""ID"", ""AssetTypeID""(int)(lookup_1), ""Weight""(int)(kilograms), ""Colour""(string)],
-                ""Location"": [""ID"",""Town""(string), ""Secured""(boolean)],
-                ""LocationAsset"": [""id"", ""LocationID""(int)(foregin key to location.id), ""AssetID""(int)(foreign key to asset.id)]
+            'tables': {
+                'Customer': [
+                        {'name': 'ID', 'type': 'bigint'},
+                        {'name': 'vehicle', 'type': 'nvarchar'},
+                        {'name': 'fineoperator', 'type': 'nvarchar'},
+                        {'name': 'fineamount', 'type': 'float'},
+                        {'name': 'age', 'type': 'int'},
+                        {'name': 'power', 'type': 'float'},
+                        {'name': 'issuer', 'type': 'string'},
+                        {'name': 'status', 'type': 'string'},
+                        {'name': 'increasedate', 'type': 'datetime'}],
+                'Asset': [
+                        {'name':'ID', 'type': 'bigint'},
+                        {'name':'AssetTypeID', 'type': 'int'},
+                        {'name':'Weight', 'type': 'int'},
+                        {'name':'Colour', 'type': 'string'},
+                        {'name':'LocationID', 'type': 'int'}],
+                'Location': [
+                        {'name':'ID', 'type': 'bigint'},
+                        {'name':'Town', 'type': 'nvarchar'},
+                        {'name':'Name', 'type': 'nvarchar'},
+                        {'name':'Phonenumber', 'type': 'nvarchar'},
+                        {'name':'Secure', 'type': 'boolean'},
+                        {'name':'Active', 'type': 'boolean'}]
             }
+
+            customer.status = [""To load"", ""Complete"", ""Processing""]
+            customer.issuer = [""External"", ""Internal""]
 
             lookup_1 = {
                 1=Car
@@ -112,34 +153,109 @@ public class Search
             {
               ""table"": ""tablename"",
               ""columns"": [""fieldname"", ""fieldname""],
-              ""filters"": {
-                ""fieldname"": ""filter value""
+              ""filter"": ""fieldname = @param1 AND fieldname != @param2"",
+              ""paramsList"": {  
+                ""param1"": ""filter value"",
+                ""param2"": ""filter value""
               },
-              ""sort"": {
-                ""column"": ""column name"",
-                ""direction"": ""sort direction""
-              },
+              ""groupby"": [fieldlist],
+              ""sort"": [
+                ""column name asc"",
+                ""direction desc""
+              ],
               ""limit"": numeric value
             }
 
         " + prompt;
 
+        JsonElement aiResponse;
+        try
+        {
+            aiResponse = await runAI(intro2);
+        }
+        catch (Exception ex)
+        {
+            return await API.Fail( response, System.Net.HttpStatusCode.TooManyRequests, ex.Message);
+        }
 
-        
+        //string textPlan = output2.ToString();
+        AISolution? plan = JsonSerializer.Deserialize<AISolution>(aiResponse.ToString());
 
+        if (plan?.table == null)
+        {
+            string? msg = aiResponse.GetString();
+            return await API.Fail(response, System.Net.HttpStatusCode.TooManyRequests, msg);
+        }
 
-        var output2 = await runAI(intro2);
+        string sql = "select";
 
+        if (plan.limit != null)
+            sql += " top " + plan.limit;
 
-        return await API.Success(response, output2);
+        sql += " " +  (plan.columns == null || plan.columns.Count == 0 ? "*" : string.Join(", ", plan.columns)) + " from " + plan.table;
 
+        SqlParameter[] parameterList = new SqlParameter[0];
 
+        if (!string.IsNullOrWhiteSpace(plan.filter) && plan.paramsList != null)
+        {
+            sql += " where " + plan.filter;
+
+            parameterList = new SqlParameter[plan.paramsList.Count];
+            int ii = 0;
+            foreach (KeyValuePair<string, JsonElement> i in plan.paramsList)
+            {
+                switch (i.Value.ValueKind)
+                {
+                    case JsonValueKind.True: parameterList[ii] = new SqlParameter(i.Key, i.Value.GetBoolean()); break;
+                    case JsonValueKind.String: parameterList[ii] = new SqlParameter(i.Key, i.Value.GetString()); break;
+                    case JsonValueKind.Number: parameterList[ii] = new SqlParameter(i.Key, i.Value.GetInt32()); break;
+                }
+                ii++;
+            }
+        }
+
+        if (plan.sort != null && plan.sort.Count > 0)
+        {
+            sql += " order by " + plan.sort[0];
+        }
+
+        List<Dictionary<string, object>> dataset = new List<Dictionary<string, object>>();
+
+        using (var command = _projectContext.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = sql;
+
+            foreach (var param in parameterList)
+            {
+                command.Parameters.Add(param);
+            }
+
+            _projectContext.GetDbConnection().Open();
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var row = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        string fieldName = reader.GetName(i);
+                        object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                        row.Add(fieldName, value);
+                    }
+
+                    dataset.Add(row);
+                }
+            }
+        }
+
+        return await API.Success(response,  JsonSerializer.Serialize( dataset));
     }
 
 
-    private async Task<object> runAI(string userPrompt)
+    private async Task<JsonElement> runAI(string userPrompt)
     {
-
         // Create request
         var requestData = new
         {
@@ -164,13 +280,20 @@ public class Search
 
         // Deserialize
         var result = JsonDocument.Parse(responseString);
-        var assistantMessage = result.RootElement
-            .GetProperty("choices")[0]
-            .GetProperty("message")
-            .GetProperty("content");
 
-        return assistantMessage;
+        try
+        {
+            var assistantMessage = result.RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content");
 
+            return assistantMessage;
+        }
+        catch (Exception)
+        {
+            throw new Exception(result.RootElement.GetProperty("error").GetProperty("message").GetString());
+        }
     }
 
 

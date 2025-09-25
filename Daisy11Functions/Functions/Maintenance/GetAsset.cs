@@ -55,12 +55,12 @@ public class GetAsset
 
         try
         {
-            long countValue = 0;
+            //long countValue = 0;
 
             FilterAndSortValues? filterAndSortConfig = await GetRequestByBody.GetBody<FilterAndSortValues>(req);
 
             AssetPaginationObject output = new();
-            int totalCount = -1;
+            //int totalCount = -1;
 
             IQueryable<Asset> unSortedData = _maintenanceContext.Asset;
 

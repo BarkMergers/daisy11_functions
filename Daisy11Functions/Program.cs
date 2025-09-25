@@ -25,8 +25,8 @@ var logger = builder.Services.BuildServiceProvider()
 string? newWorldConnection = Environment.GetEnvironmentVariable("NewSQLConnection");
 if (string.IsNullOrWhiteSpace(newWorldConnection))
     logger.LogInformation("Environmental variable 'NewSQLConnection' is not set");
-
-DatabaseMigrator.EnsureDatabase(newWorldConnection);
+else
+    DatabaseMigrator.EnsureDatabase(newWorldConnection);
 
 builder.Services.AddDbContext<NewWorldContext>(options => options.UseSqlServer(newWorldConnection));
 builder.Services.AddScoped<INewWorldContext, NewWorldContext>();

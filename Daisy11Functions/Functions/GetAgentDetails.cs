@@ -56,7 +56,7 @@ public class GetAgentDetails
 
             string tenantName = (tenant == null || tenant.tenantname == null) ? "" : tenant.tenantname;
 
-            ReturnData? agentRecord = _projectContext.Agent.Where(x => x.agent == agent && x.tenantid == tenant.id)
+            ReturnData? agentRecord = _projectContext.Agent.Where(x => x.agent == agent && x.tenantid == (tenant == null ? 0 : tenant.id))
             .Select(x => new ReturnData
             {
                 id = x.id,

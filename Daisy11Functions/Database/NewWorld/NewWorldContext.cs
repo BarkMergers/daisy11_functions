@@ -24,9 +24,24 @@ namespace Daisy11Functions.Database.NewWorld
             return await Database.ExecuteSqlRawAsync(sql);
         }
 
+        public async Task<int> ExecuteSqlRawAsync(string sql, params SqlParameter[] paramList)
+        {
+            return await Database.ExecuteSqlRawAsync(sql, paramList);
+        }
+
+
+
+
         public async Task<IDbContextTransaction> BeginTransaction()
         {
             return await Database.BeginTransactionAsync();
         }
+
+        public System.Data.Common.DbConnection GetDbConnection()
+        {
+            return Database.GetDbConnection();
+        }
+
+
     }
 }

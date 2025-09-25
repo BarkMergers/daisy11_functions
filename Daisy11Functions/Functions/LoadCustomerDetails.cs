@@ -8,6 +8,7 @@ using Daisy11Functions.Database.NewWorld;
 using Daisy11Functions.Database.NewWorld.Tables;
 using Microsoft.EntityFrameworkCore;
 using Daisy11Functions.Auth;
+using Microsoft.Identity.Client;
 
 namespace Daisy11Functions;
 
@@ -35,12 +36,10 @@ public class LoadCustomerDetails
 
         try
         {
-
-
-
             Customer? output = await _projectContext.Customer.FirstOrDefaultAsync(x => x.id == id);
 
-
+            if (output == null)
+                throw new Exception($"Customer {id} not found");
 
             //MongoClient dbClient = new MongoClient("mongodb+srv://mymongorabbit:dsad$3fer@mongorabbit.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000");
             ////MongoClient dbClient = new MongoClient("mongodb://localhost:27017/local");
