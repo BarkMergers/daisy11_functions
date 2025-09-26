@@ -50,7 +50,7 @@ public class GetAgentFilter
             {
                 Type = "list",
                 Description = "Agent Name",
-                Data = ["Hart Hagerty", "Brice Swyre", "Marjy Frencz", "Yancy Tear", "Jim 09:06"]
+                Data = ["Hart Hagerty", "Brice Swyre", "Marjy Frencz", "Yancy Tear", "Jim 09:28"]
             };
 
             output.Color = new FilterDescription()
