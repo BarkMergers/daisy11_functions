@@ -1,0 +1,53 @@
+name: Deploy Azure Function App
+
+on:
+  push:
+    branches:
+      - main   #  adjust if you want a different branch
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' #  adjust if your project targets a different version
+
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Build project
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # Publish project (creates a package in the 'publish' folder)
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish
+
+      # Log in to Azure using Service Principal
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy to Azure Function App
+      - name: Deploy to Function App
+        uses: azure/functions-action@v1
+        with:
+          app-name: jabdevFunction
+          package: ./publish
+          slot-name: production   # 👈 remove or change if you want staging slots
