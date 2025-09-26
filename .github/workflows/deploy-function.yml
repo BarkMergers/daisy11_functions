@@ -3,7 +3,7 @@ name: Deploy Azure Function App
 on:
   push:
     branches:
-      - main   #  adjust if you want a different branch
+      - master   #  adjust if you want a different branch
 
 permissions:
   contents: read
